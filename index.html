@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="工作助手">
+  <meta name="theme-color" content="#007AFF">
+  <title>工作助手</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ============ 页面容器 ============ -->
+  <div id="app">
+    <!-- 顶部状态栏 -->
+    <header class="app-header">
+      <h1 id="page-title">工作助手</h1>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="app-main" id="app-main">
+      <!-- ===== 首页 ===== -->
+      <section id="page-home" class="page active">
+        <div class="home-welcome">
+          <div class="home-date" id="home-date"></div>
+          <div class="home-greeting" id="home-greeting"></div>
+        </div>
+        <div class="home-stats">
+          <div class="stat-card" onclick="navigateTo('todo')">
+            <div class="stat-icon">✅</div>
+            <div class="stat-num" id="stat-todo">0</div>
+            <div class="stat-label">待办</div>
+          </div>
+          <div class="stat-card" onclick="navigateTo('schedule')">
+            <div class="stat-icon">📅</div>
+            <div class="stat-num" id="stat-schedule">0</div>
+            <div class="stat-label">今日日程</div>
+          </div>
+          <div class="stat-card" onclick="navigateTo('note')">
+            <div class="stat-icon">📝</div>
+            <div class="stat-num" id="stat-note">0</div>
+            <div class="stat-label">笔记</div>
+          </div>
+          <div class="stat-card" onclick="navigateTo('pomodoro')">
+            <div class="stat-icon">🍅</div>
+            <div class="stat-num" id="stat-pomodoro">0</div>
+            <div class="stat-label">今日番茄</div>
+          </div>
+        </div>
+        <div class="home-section">
+          <h3>今日待办</h3>
+          <ul class="home-list" id="home-todo-list"></ul>
+          <div class="home-empty" id="home-todo-empty" style="display:none;">今日暂无待办，去添加几个吧！</div>
+        </div>
+        <div class="home-section">
+          <h3>今日日程</h3>
+          <ul class="home-list" id="home-schedule-list"></ul>
+          <div class="home-empty" id="home-schedule-empty" style="display:none;">今日暂无日程</div>
+        </div>
+      </section>
+
+      <!-- ===== 待办页面 ===== -->
+      <section id="page-todo" class="page">
+        <div class="toolbar">
+          <button class="btn-primary" onclick="showModal('todo')">+ 新建待办</button>
+          <select id="todo-filter" onchange="renderTodo()">
+            <option value="all">全部</option>
+            <option value="active">进行中</option>
+            <option value="completed">已完成</option>
+          </select>
+        </div>
+        <ul class="list" id="todo-list"></ul>
+        <div class="empty-state" id="todo-empty" style="display:none;">
+          <div class="empty-icon">📝</div>
+          <p>暂无待办事项</p>
+        </div>
+      </section>
+
+      <!-- ===== 日程页面 ===== -->
+      <section id="page-schedule" class="page">
+        <div class="toolbar">
+          <button class="btn-primary" onclick="showModal('schedule')">+ 新建日程</button>
+        </div>
+        <div class="date-picker-row">
+          <button onclick="changeScheduleDate(-1)">‹</button>
+          <span id="schedule-date-label"></span>
+          <button onclick="changeScheduleDate(1)">›</button>
+        </div>
+        <ul class="list" id="schedule-list"></ul>
+        <div class="empty-state" id="schedule-empty" style="display:none;">
+          <div class="empty-icon">📅</div>
+          <p>暂无日程安排</p>
+        </div>
+      </section>
+
+      <!-- ===== 笔记页面 ===== -->
+      <section id="page-note" class="page">
+        <div class="toolbar">
+          <button class="btn-primary" onclick="showModal('note')">+ 新建笔记</button>
+          <input type="text" id="note-search" placeholder="🔍 搜索笔记" oninput="renderNote()">
+        </div>
+        <div class="note-grid" id="note-grid"></div>
+        <div class="empty-state" id="note-empty" style="display:none;">
+          <div class="empty-icon">📒</div>
+          <p>暂无笔记</p>
+        </div>
+      </section>
+
+      <!-- ===== 番茄钟页面 ===== -->
+      <section id="page-pomodoro" class="page">
+        <div class="pomodoro-container">
+          <div class="pomodoro-mode">
+            <button class="mode-btn active" data-mode="work" onclick="setPomodoroMode('work')">专注</button>
+            <button class="mode-btn" data-mode="shortBreak" onclick="setPomodoroMode('shortBreak')">短休息</button>
+            <button class="mode-btn" data-mode="longBreak" onclick="setPomodoroMode('longBreak')">长休息</button>
+          </div>
+          <div class="pomodoro-timer" id="pomodoro-time">25:00</div>
+          <div class="pomodoro-task">
+            <input type="text" id="pomodoro-task-input" placeholder="这次专注做什么？">
+          </div>
+          <div class="pomodoro-controls">
+            <button class="pomo-btn primary" id="pomo-start" onclick="startPomodoro()">开始</button>
+            <button class="pomo-btn" id="pomo-pause" onclick="pausePomodoro()" style="display:none;">暂停</button>
+            <button class="pomo-btn" id="pomo-reset" onclick="resetPomodoro()">重置</button>
+          </div>
+          <div class="pomodoro-stats">
+            <div>今日完成: <strong id="pomo-today-count">0</strong> 个番茄</div>
+            <div>总专注时长: <strong id="pomo-total-min">0</strong> 分钟</div>
+          </div>
+          <div class="pomodoro-history">
+            <h4>今日记录</h4>
+            <ul id="pomo-history-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 设置页面 ===== -->
+      <section id="page-settings" class="page">
+        <div class="settings-group">
+          <h3>数据管理</h3>
+          <button class="setting-btn" onclick="exportData()">📤 导出数据 (JSON)</button>
+          <button class="setting-btn" onclick="document.getElementById('import-file').click()">📥 导入数据</button>
+          <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(this)">
+          <button class="setting-btn danger" onclick="clearAllData()">🗑️ 清空所有数据</button>
+        </div>
+        <div class="settings-group">
+          <h3>关于</h3>
+          <div class="setting-item">
+            <span>版本</span>
+            <span>1.0.0</span>
+          </div>
+          <div class="setting-item">
+            <span>数据存储</span>
+            <span>本地 (localStorage)</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 底部导航 -->
+    <nav class="app-nav">
+      <button class="nav-btn active" data-page="home" onclick="navigateTo('home')">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">首页</span>
+      </button>
+      <button class="nav-btn" data-page="todo" onclick="navigateTo('todo')">
+        <span class="nav-icon">✅</span>
+        <span class="nav-label">待办</span>
+      </button>
+      <button class="nav-btn" data-page="schedule" onclick="navigateTo('schedule')">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">日程</span>
+      </button>
+      <button class="nav-btn" data-page="note" onclick="navigateTo('note')">
+        <span class="nav-icon">📝</span>
+        <span class="nav-label">笔记</span>
+      </button>
+      <button class="nav-btn" data-page="pomodoro" onclick="navigateTo('pomodoro')">
+        <span class="nav-icon">🍅</span>
+        <span class="nav-label">番茄</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ============ 模态框 ============ -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <!-- 待办模态框 -->
+    <div class="modal" id="modal-todo" onclick="event.stopPropagation()">
+      <h3 id="modal-todo-title">新建待办</h3>
+      <input type="text" id="todo-input-title" placeholder="待办内容">
+      <div class="form-row">
+        <label>优先级</label>
+        <select id="todo-input-priority">
+          <option value="high">🔴 高</option>
+          <option value="medium" selected>🟡 中</option>
+          <option value="low">🟢 低</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>截止日期</label>
+        <input type="date" id="todo-input-date">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="hideModal()">取消</button>
+        <button class="btn-primary" onclick="saveTodo()">保存</button>
+      </div>
+    </div>
+
+    <!-- 日程模态框 -->
+    <div class="modal" id="modal-schedule" onclick="event.stopPropagation()">
+      <h3 id="modal-schedule-title">新建日程</h3>
+      <input type="text" id="schedule-input-title" placeholder="日程标题">
+      <div class="form-row">
+        <label>日期</label>
+        <input type="date" id="schedule-input-date">
+      </div>
+      <div class="form-row">
+        <label>时间</label>
+        <input type="time" id="schedule-input-time">
+      </div>
+      <textarea id="schedule-input-note" placeholder="备注（可选）" rows="3"></textarea>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="hideModal()">取消</button>
+        <button class="btn-primary" onclick="saveSchedule()">保存</button>
+      </div>
+    </div>
+
+    <!-- 笔记模态框 -->
+    <div class="modal" id="modal-note" onclick="event.stopPropagation()">
+      <h3 id="modal-note-title">新建笔记</h3>
+      <input type="text" id="note-input-title" placeholder="笔记标题">
+      <textarea id="note-input-content" placeholder="输入笔记内容..." rows="8"></textarea>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="hideModal()">取消</button>
+        <button class="btn-primary" onclick="saveNote()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认对话框 -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+      <p id="confirm-msg">确定要删除吗？</p>
+      <div class="confirm-actions">
+        <button class="btn-secondary" onclick="cancelConfirm()">取消</button>
+        <button class="btn-danger" id="confirm-ok" onclick="">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
