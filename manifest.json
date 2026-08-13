@@ -1,7 +1,7 @@
 {
   "name": "工作助手",
   "short_name": "工作助手",
-  "description": "个人工作助手 - 待办、日程、笔记、番茄钟",
+  "description": "EWS工作助手 - 客诉/修补件/待办",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#F2F2F7",

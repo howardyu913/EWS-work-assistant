@@ -13,174 +13,214 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ============ 页面容器 ============ -->
   <div id="app">
-    <!-- 顶部状态栏 -->
+    <!-- 顶部栏 -->
     <header class="app-header">
       <h1 id="page-title">工作助手</h1>
+      <button class="header-btn" id="header-action" style="display:none;"></button>
     </header>
 
-    <!-- 主内容区 -->
+    <!-- 主内容 -->
     <main class="app-main" id="app-main">
-      <!-- ===== 首页 ===== -->
-      <section id="page-home" class="page active">
-        <div class="home-welcome">
-          <div class="home-date" id="home-date"></div>
-          <div class="home-greeting" id="home-greeting"></div>
+      <!-- ===== 客诉模块 ===== -->
+      <section id="page-complaint" class="page active">
+        <div class="feishu-status" id="feishu-status">
+          <span>🔴 未配置飞书</span>
+          <button onclick="navigateTo('settings')">去配置</button>
         </div>
-        <div class="home-stats">
-          <div class="stat-card" onclick="navigateTo('todo')">
-            <div class="stat-icon">✅</div>
-            <div class="stat-num" id="stat-todo">0</div>
-            <div class="stat-label">待办</div>
+        <div class="toolbar" id="complaint-toolbar" style="display:none;">
+          <button class="btn-primary" onclick="refreshFeishuData()">🔄 刷新</button>
+          <select id="complaint-filter" onchange="renderComplaint()">
+            <option value="all">全部</option>
+            <option value="pending" selected>待处理</option>
+            <option value="processing">处理中</option>
+            <option value="urgent">紧急</option>
+          </select>
+        </div>
+        <div class="complaint-summary" id="complaint-summary" style="display:none;">
+          <div class="summary-card">
+            <div class="summary-num" id="summary-total">0</div>
+            <div class="summary-label">总客诉</div>
           </div>
-          <div class="stat-card" onclick="navigateTo('schedule')">
-            <div class="stat-icon">📅</div>
-            <div class="stat-num" id="stat-schedule">0</div>
-            <div class="stat-label">今日日程</div>
+          <div class="summary-card">
+            <div class="summary-num" id="summary-pending">0</div>
+            <div class="summary-label">待处理</div>
           </div>
-          <div class="stat-card" onclick="navigateTo('note')">
-            <div class="stat-icon">📝</div>
-            <div class="stat-num" id="stat-note">0</div>
-            <div class="stat-label">笔记</div>
-          </div>
-          <div class="stat-card" onclick="navigateTo('pomodoro')">
-            <div class="stat-icon">🍅</div>
-            <div class="stat-num" id="stat-pomodoro">0</div>
-            <div class="stat-label">今日番茄</div>
+          <div class="summary-card">
+            <div class="summary-num" id="summary-urgent">0</div>
+            <div class="summary-label">紧急</div>
           </div>
         </div>
-        <div class="home-section">
-          <h3>今日待办</h3>
-          <ul class="home-list" id="home-todo-list"></ul>
-          <div class="home-empty" id="home-todo-empty" style="display:none;">今日暂无待办，去添加几个吧！</div>
+        <ul class="list" id="complaint-list"></ul>
+        <div class="empty-state" id="complaint-empty" style="display:none;">
+          <div class="empty-icon">📋</div>
+          <p>暂无客诉数据</p>
+          <p class="empty-sub">请在设置中配置飞书多维表格</p>
         </div>
-        <div class="home-section">
-          <h3>今日日程</h3>
-          <ul class="home-list" id="home-schedule-list"></ul>
-          <div class="home-empty" id="home-schedule-empty" style="display:none;">今日暂无日程</div>
+        <div class="loading" id="complaint-loading" style="display:none;">
+          <div class="spinner"></div>
+          <p>正在加载飞书数据...</p>
         </div>
       </section>
 
-      <!-- ===== 待办页面 ===== -->
+      <!-- ===== 修补件模块 ===== -->
+      <section id="page-spare" class="page">
+        <div class="spare-tabs">
+          <button class="spare-tab active" onclick="switchSpareTab('dashboard')">📊 看板</button>
+          <button class="spare-tab" onclick="switchSpareTab('search')">🔍 SKU查找</button>
+        </div>
+        <div id="spare-dashboard" class="spare-panel active">
+          <div class="iframe-container">
+            <iframe id="spare-iframe" src="https://ewssp.pythonanywhere.com/dashboard" frameborder="0" loading="lazy"></iframe>
+          </div>
+          <div class="iframe-fallback" id="spare-fallback" style="display:none;">
+            <p>无法嵌入显示</p>
+            <a href="https://ewssp.pythonanywhere.com/dashboard" target="_blank" class="btn-primary">在浏览器中打开</a>
+          </div>
+        </div>
+        <div id="spare-search" class="spare-panel">
+          <div class="search-box">
+            <input type="text" id="sku-input" placeholder="输入SKU编号..." onkeypress="if(event.key==='Enter')searchSKU()">
+            <button onclick="searchSKU()">🔍 查找</button>
+          </div>
+          <div id="sku-result"></div>
+        </div>
+      </section>
+
+      <!-- ===== 待办模块 ===== -->
       <section id="page-todo" class="page">
         <div class="toolbar">
-          <button class="btn-primary" onclick="showModal('todo')">+ 新建待办</button>
-          <select id="todo-filter" onchange="renderTodo()">
-            <option value="all">全部</option>
-            <option value="active">进行中</option>
-            <option value="completed">已完成</option>
-          </select>
+          <button class="btn-voice" id="voice-btn" ontouchstart="startVoiceInput(event)" ontouchend="stopVoiceInput(event)" onmousedown="startVoiceInput(event)" onmouseup="stopVoiceInput(event)">
+            <span class="voice-icon">🎤</span>
+            <span class="voice-label">按住说话</span>
+          </button>
+          <button class="btn-primary" onclick="showModal('todo')">+ 手动添加</button>
+        </div>
+        <div class="voice-hint" id="voice-hint" style="display:none;">
+          <div class="voice-wave">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <p>正在聆听... 松开结束</p>
+        </div>
+        <div class="todo-filter-bar">
+          <button class="filter-btn active" data-filter="active" onclick="setTodoFilter('active')">进行中</button>
+          <button class="filter-btn" data-filter="completed" onclick="setTodoFilter('completed')">已完成</button>
+          <button class="filter-btn" data-filter="all" onclick="setTodoFilter('all')">全部</button>
         </div>
         <ul class="list" id="todo-list"></ul>
         <div class="empty-state" id="todo-empty" style="display:none;">
-          <div class="empty-icon">📝</div>
+          <div class="empty-icon">✅</div>
           <p>暂无待办事项</p>
+          <p class="empty-sub">按住 🎤 按钮说话快速添加</p>
         </div>
       </section>
 
-      <!-- ===== 日程页面 ===== -->
-      <section id="page-schedule" class="page">
-        <div class="toolbar">
-          <button class="btn-primary" onclick="showModal('schedule')">+ 新建日程</button>
+      <!-- ===== AI 周报 ===== -->
+      <section id="page-report" class="page">
+        <div class="report-header">
+          <h2>🤖 AI 周报生成</h2>
+          <p>基于本周数据自动生成工作总结</p>
         </div>
-        <div class="date-picker-row">
-          <button onclick="changeScheduleDate(-1)">‹</button>
-          <span id="schedule-date-label"></span>
-          <button onclick="changeScheduleDate(1)">›</button>
+        <div class="report-range">
+          <label>时间范围</label>
+          <select id="report-range" onchange="updateReportPreview()">
+            <option value="week">本周</option>
+            <option value="lastweek">上周</option>
+            <option value="month">本月</option>
+          </select>
         </div>
-        <ul class="list" id="schedule-list"></ul>
-        <div class="empty-state" id="schedule-empty" style="display:none;">
-          <div class="empty-icon">📅</div>
-          <p>暂无日程安排</p>
+        <div class="report-stats" id="report-stats">
+          <div class="stat-card"><div class="stat-num" id="r-todo-done">0</div><div class="stat-label">待办完成</div></div>
+          <div class="stat-card"><div class="stat-num" id="r-todo-total">0</div><div class="stat-label">待办总数</div></div>
+          <div class="stat-card"><div class="stat-num" id="r-complaint">0</div><div class="stat-label">客诉处理</div></div>
         </div>
-      </section>
-
-      <!-- ===== 笔记页面 ===== -->
-      <section id="page-note" class="page">
-        <div class="toolbar">
-          <button class="btn-primary" onclick="showModal('note')">+ 新建笔记</button>
-          <input type="text" id="note-search" placeholder="🔍 搜索笔记" oninput="renderNote()">
+        <div class="report-preview" id="report-preview">
+          <p class="report-placeholder">点击生成按钮创建周报</p>
         </div>
-        <div class="note-grid" id="note-grid"></div>
-        <div class="empty-state" id="note-empty" style="display:none;">
-          <div class="empty-icon">📒</div>
-          <p>暂无笔记</p>
+        <div class="report-actions">
+          <button class="btn-primary btn-large" onclick="generateWeeklyReport()">✨ 生成周报</button>
+          <button class="btn-secondary btn-large" onclick="copyReport()" id="btn-copy-report" style="display:none;">📋 复制全文</button>
         </div>
       </section>
 
-      <!-- ===== 番茄钟页面 ===== -->
-      <section id="page-pomodoro" class="page">
-        <div class="pomodoro-container">
-          <div class="pomodoro-mode">
-            <button class="mode-btn active" data-mode="work" onclick="setPomodoroMode('work')">专注</button>
-            <button class="mode-btn" data-mode="shortBreak" onclick="setPomodoroMode('shortBreak')">短休息</button>
-            <button class="mode-btn" data-mode="longBreak" onclick="setPomodoroMode('longBreak')">长休息</button>
-          </div>
-          <div class="pomodoro-timer" id="pomodoro-time">25:00</div>
-          <div class="pomodoro-task">
-            <input type="text" id="pomodoro-task-input" placeholder="这次专注做什么？">
-          </div>
-          <div class="pomodoro-controls">
-            <button class="pomo-btn primary" id="pomo-start" onclick="startPomodoro()">开始</button>
-            <button class="pomo-btn" id="pomo-pause" onclick="pausePomodoro()" style="display:none;">暂停</button>
-            <button class="pomo-btn" id="pomo-reset" onclick="resetPomodoro()">重置</button>
-          </div>
-          <div class="pomodoro-stats">
-            <div>今日完成: <strong id="pomo-today-count">0</strong> 个番茄</div>
-            <div>总专注时长: <strong id="pomo-total-min">0</strong> 分钟</div>
-          </div>
-          <div class="pomodoro-history">
-            <h4>今日记录</h4>
-            <ul id="pomo-history-list"></ul>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== 设置页面 ===== -->
+      <!-- ===== 设置 ===== -->
       <section id="page-settings" class="page">
         <div class="settings-group">
-          <h3>数据管理</h3>
-          <button class="setting-btn" onclick="exportData()">📤 导出数据 (JSON)</button>
+          <h3>🔷 飞书客诉配置</h3>
+          <p class="setting-desc">配置后可在客诉模块自动同步多维表格数据</p>
+          <div class="form-row-stacked">
+            <label>App ID</label>
+            <input type="text" id="fs-app-id" placeholder="飞书开放平台应用的 App ID">
+          </div>
+          <div class="form-row-stacked">
+            <label>App Secret</label>
+            <input type="password" id="fs-app-secret" placeholder="飞书开放平台应用的 App Secret">
+          </div>
+          <div class="form-row-stacked">
+            <label>多维表格 App Token</label>
+            <input type="text" id="fs-app-token" placeholder="从多维表格URL中获取">
+          </div>
+          <div class="form-row-stacked">
+            <label>数据表 Table ID</label>
+            <input type="text" id="fs-table-id" placeholder="从多维表格URL中获取">
+          </div>
+          <div class="form-row-stacked">
+            <label>状态字段名</label>
+            <input type="text" id="fs-status-field" value="状态" placeholder="多维表格中代表状态的字段名">
+          </div>
+          <div class="form-row-stacked">
+            <label>已完成状态值</label>
+            <input type="text" id="fs-done-value" value="已完成" placeholder="例如：已完成/Closed/已关闭">
+          </div>
+          <button class="btn-primary" onclick="saveFeishuConfig()">💾 保存配置</button>
+          <button class="btn-secondary" onclick="testFeishuConnection()" style="margin-top:8px;">🔗 测试连接</button>
+        </div>
+
+        <div class="settings-group">
+          <h3>⚙️ 通用设置</h3>
+          <button class="setting-btn" onclick="exportData()">📤 导出数据</button>
           <button class="setting-btn" onclick="document.getElementById('import-file').click()">📥 导入数据</button>
           <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(this)">
           <button class="setting-btn danger" onclick="clearAllData()">🗑️ 清空所有数据</button>
         </div>
+
         <div class="settings-group">
-          <h3>关于</h3>
-          <div class="setting-item">
-            <span>版本</span>
-            <span>1.0.0</span>
+          <h3>📖 帮助</h3>
+          <div class="help-item">
+            <strong>如何获取飞书凭证？</strong>
+            <ol>
+              <li>访问 <a href="https://open.feishu.cn" target="_blank">open.feishu.cn</a> 创建企业自建应用</li>
+              <li>开通「多维表格」权限并发布应用</li>
+              <li>在应用凭证页面获取 App ID 和 App Secret</li>
+              <li>打开多维表格，从 URL 中提取 App Token 和 Table ID</li>
+            </ol>
           </div>
-          <div class="setting-item">
-            <span>数据存储</span>
-            <span>本地 (localStorage)</span>
-          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>ℹ️ 关于</h3>
+          <div class="setting-item"><span>版本</span><span>2.0.0</span></div>
+          <div class="setting-item"><span>数据存储</span><span>本地 localStorage</span></div>
         </div>
       </section>
     </main>
 
     <!-- 底部导航 -->
     <nav class="app-nav">
-      <button class="nav-btn active" data-page="home" onclick="navigateTo('home')">
-        <span class="nav-icon">🏠</span>
-        <span class="nav-label">首页</span>
+      <button class="nav-btn active" data-page="complaint" onclick="navigateTo('complaint')">
+        <span class="nav-icon">📋</span><span class="nav-label">客诉</span>
+      </button>
+      <button class="nav-btn" data-page="spare" onclick="navigateTo('spare')">
+        <span class="nav-icon">🔧</span><span class="nav-label">修补件</span>
       </button>
       <button class="nav-btn" data-page="todo" onclick="navigateTo('todo')">
-        <span class="nav-icon">✅</span>
-        <span class="nav-label">待办</span>
+        <span class="nav-icon">✅</span><span class="nav-label">待办</span>
       </button>
-      <button class="nav-btn" data-page="schedule" onclick="navigateTo('schedule')">
-        <span class="nav-icon">📅</span>
-        <span class="nav-label">日程</span>
+      <button class="nav-btn" data-page="report" onclick="navigateTo('report')">
+        <span class="nav-icon">📊</span><span class="nav-label">周报</span>
       </button>
-      <button class="nav-btn" data-page="note" onclick="navigateTo('note')">
-        <span class="nav-icon">📝</span>
-        <span class="nav-label">笔记</span>
-      </button>
-      <button class="nav-btn" data-page="pomodoro" onclick="navigateTo('pomodoro')">
-        <span class="nav-icon">🍅</span>
-        <span class="nav-label">番茄</span>
+      <button class="nav-btn" data-page="settings" onclick="navigateTo('settings')">
+        <span class="nav-icon">⚙️</span><span class="nav-label">设置</span>
       </button>
     </nav>
   </div>
@@ -203,39 +243,19 @@
         <label>截止日期</label>
         <input type="date" id="todo-input-date">
       </div>
+      <textarea id="todo-input-note" placeholder="进度备注（语音输入会自动填充）" rows="3"></textarea>
       <div class="modal-actions">
         <button class="btn-secondary" onclick="hideModal()">取消</button>
         <button class="btn-primary" onclick="saveTodo()">保存</button>
       </div>
     </div>
 
-    <!-- 日程模态框 -->
-    <div class="modal" id="modal-schedule" onclick="event.stopPropagation()">
-      <h3 id="modal-schedule-title">新建日程</h3>
-      <input type="text" id="schedule-input-title" placeholder="日程标题">
-      <div class="form-row">
-        <label>日期</label>
-        <input type="date" id="schedule-input-date">
-      </div>
-      <div class="form-row">
-        <label>时间</label>
-        <input type="time" id="schedule-input-time">
-      </div>
-      <textarea id="schedule-input-note" placeholder="备注（可选）" rows="3"></textarea>
+    <!-- 客诉详情模态框 -->
+    <div class="modal modal-large" id="modal-complaint" onclick="event.stopPropagation()">
+      <h3>客诉详情</h3>
+      <div class="complaint-detail" id="complaint-detail-content"></div>
       <div class="modal-actions">
-        <button class="btn-secondary" onclick="hideModal()">取消</button>
-        <button class="btn-primary" onclick="saveSchedule()">保存</button>
-      </div>
-    </div>
-
-    <!-- 笔记模态框 -->
-    <div class="modal" id="modal-note" onclick="event.stopPropagation()">
-      <h3 id="modal-note-title">新建笔记</h3>
-      <input type="text" id="note-input-title" placeholder="笔记标题">
-      <textarea id="note-input-content" placeholder="输入笔记内容..." rows="8"></textarea>
-      <div class="modal-actions">
-        <button class="btn-secondary" onclick="hideModal()">取消</button>
-        <button class="btn-primary" onclick="saveNote()">保存</button>
+        <button class="btn-secondary" onclick="hideModal()">关闭</button>
       </div>
     </div>
   </div>
@@ -246,10 +266,13 @@
       <p id="confirm-msg">确定要删除吗？</p>
       <div class="confirm-actions">
         <button class="btn-secondary" onclick="cancelConfirm()">取消</button>
-        <button class="btn-danger" id="confirm-ok" onclick="">确定</button>
+        <button class="btn-danger" id="confirm-ok">确定</button>
       </div>
     </div>
   </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast"></div>
 
   <script src="app.js"></script>
 </body>
