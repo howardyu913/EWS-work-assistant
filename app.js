@@ -1,5 +1,5 @@
 /* ========================
-   工作助手 v2.0 - 主逻辑
+   工作助手 v3.0 - 主逻辑
    ======================== */
 
 // ---------- 数据存储 ----------
@@ -16,6 +16,20 @@ let feishuTokenCache = null;
 let feishuTokenExpiry = 0;
 let recognition = null;
 let isRecording = false;
+let audioChunks = [];
+let mediaRecorder = null;
+
+// ---------- 行业动态数据 ----------
+const NEWS_DATA = [
+  { id: 'n1', tag: 'export', tagText: '出口', title: '2026年Q1电动两轮车出口约720万辆，同比增长68.2%', desc: '海关总署数据显示，2026年第一季度中国电动两轮车出口保持高速增长，民营企业出口电动摩托车及脚踏车同比增长30%。', date: '2026-08-16', source: 'STARGO市场洞察' },
+  { id: 'n2', tag: 'market', tagText: '市场', title: '无锡锡山区电动两轮车出口额达2.87亿美元，同比增长33.7%', desc: '今年前四月，锡山区电动两轮车行业出口额达2.87亿美元，同比增长33.7%，出口已连续9年保持稳定增长。', date: '2026-06-08', source: '中国一带一路网' },
+  { id: 'n3', tag: 'policy', tagText: '政策', title: '工信部加强电动自行车锂电池回收利用体系建设', desc: '工信部、供销合作总社联合发布通知，进一步加强电动自行车锂离子电池回收利用体系建设，推动标准制定和宣贯培训。', date: '2026-04-06', source: 'Mysteel' },
+  { id: 'n4', tag: 'export', tagText: '出口', title: '浙江"新三样"产品出口额759.4亿元，同比增长51.7%', desc: '1-5月浙江省新能源汽车、储能锂电池、光伏等"新三样"产品出口额达759.4亿元，锂电池出口增长4成左右。', date: '2026-06-25', source: '海关总署' },
+  { id: 'n5', tag: 'market', tagText: '市场', title: '电动自行车位列MIC国际站重工行业订单量第一', desc: '在中国制造网"超级出海季"数据中，电动自行车位列重工行业订单量排行榜第一，在美、巴、俄、阿、墨五大市场高频出现。', date: '2026-05-16', source: '上海经信委' },
+  { id: 'n6', tag: 'policy', tagText: '政策', title: '欧盟LMT电池护照2027年2月18日起适用', desc: '欧盟委员会Regulation (EU) 2023/1542规定，电动自行车电池护照制度将于2027年2月18日正式实施，需提前准备合规。', date: '2026-08-16', source: 'STARGO' },
+  { id: 'n7', tag: 'market', tagText: '市场', title: '印尼镍铁出口政策反复，镍价持续上涨', desc: '印尼镍铁出口政策一度引发供应担忧，当前镍铁供应紧张，价格持续上涨。碳酸锂市场预计短期价格震荡于18-20万元/吨。', date: '2026-05-22', source: 'Mysteel' },
+  { id: 'n8', tag: 'export', tagText: '出口', title: '2026年1-2月锂电池出口142亿美元，增长46%', desc: '乘联分会数据显示，2026年1-2月锂电池出口额达142亿美元，同比增长46%，在出口退税减少前保持高位增速。', date: '2026-04-09', source: '乘联分会' },
+];
 
 // ---------- 初始化 ----------
 document.addEventListener('DOMContentLoaded', () => {
@@ -35,17 +49,22 @@ function navigateTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page)?.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
-  const titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', report: 'AI周报', settings: '设置' };
+  const titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', news: '行业动态', report: 'AI周报', settings: '设置' };
   document.getElementById('page-title').textContent = titles[page] || '工作助手';
+
+  // 语音按钮只在待办页面显示
+  document.getElementById('voice-bar').style.display = (page === 'todo') ? 'block' : 'none';
+
   renderPage(page);
 }
 
 function renderPage(page) {
   if (page === 'complaint') renderComplaint();
   if (page === 'spare') initSparePage();
-  if (page === 'todo') renderTodo();
+  if (page === 'todo') { renderTodo(); document.getElementById('voice-tip').style.display = 'block'; }
+  if (page === 'news') renderNews();
   if (page === 'report') updateReportPreview();
-  if (page === 'settings') loadFeishuConfig();
+  if (page === 'settings') loadSettings();
 }
 
 // ==================== 客诉模块（飞书）====================
@@ -122,7 +141,6 @@ async function refreshFeishuData() {
   } catch (e) {
     console.error(e);
     showToast('同步失败，请检查网络和配置');
-    // CORS 或网络问题，尝试显示缓存数据
     renderComplaint();
   } finally {
     loading.style.display = 'none';
@@ -136,7 +154,6 @@ function renderComplaint() {
   const statusField = cfg.statusField || '状态';
   const doneValue = cfg.doneValue || '已完成';
 
-  // 统计
   let total = 0, pending = 0, urgent = 0;
   records.forEach(r => {
     const fields = r.fields || {};
@@ -151,7 +168,6 @@ function renderComplaint() {
   document.getElementById('summary-pending').textContent = pending;
   document.getElementById('summary-urgent').textContent = urgent;
 
-  // 过滤
   let filtered = records.filter(r => {
     const fields = r.fields || {};
     const status = String(fields[statusField] || '');
@@ -159,7 +175,7 @@ function renderComplaint() {
     if (filter === 'pending') return !isDone && (status.includes('待') || status === '');
     if (filter === 'processing') return !isDone && (status.includes('处理') || status.includes('进行'));
     if (filter === 'urgent') return status.includes('急') || status.includes('Urgent');
-    return !isDone; // all默认显示未完成
+    return !isDone;
   });
 
   const list = document.getElementById('complaint-list');
@@ -181,7 +197,6 @@ function renderComplaint() {
     else if (status.includes('处理') || status.includes('进行')) statusClass = 'processing';
     else if (status.includes('完成') || status.includes('Closed')) statusClass = 'done';
 
-    // 提取关键字段
     const title = fields['客诉编号'] || fields['编号'] || fields['标题'] || fields['Title'] || '客诉 ' + (r.record_id?.slice(-6) || '');
     const customer = fields['客户'] || fields['客户名称'] || fields['Customer'] || '';
     const market = fields['市场'] || fields['区域'] || fields['Market'] || '';
@@ -222,10 +237,8 @@ function showComplaintDetail(record) {
 
 // ==================== 修补件模块 ====================
 function initSparePage() {
-  // 尝试检测 iframe 是否加载成功
   const iframe = document.getElementById('spare-iframe');
-  iframe.onload = () => { document.getElementById('spare-fallback').style.display = 'none'; };
-  iframe.onerror = () => { document.getElementById('spare-fallback').style.display = 'block'; };
+  iframe.onload = () => { document.getElementById('spare-fallback')?.style.display = 'none'; };
 }
 
 function switchSpareTab(tab) {
@@ -238,12 +251,9 @@ function searchSKU() {
   const sku = document.getElementById('sku-input').value.trim();
   const resultDiv = document.getElementById('sku-result');
   if (!sku) { showToast('请输入SKU编号'); return; }
-  resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>查询中...</p></div>';
-  // 在新窗口打开搜索结果
   const searchUrl = `https://ewssp.pythonanywhere.com/dashboard?search=${encodeURIComponent(sku)}`;
   resultDiv.innerHTML = `
     <div class="empty-state">
-      <div class="empty-icon">🔍</div>
       <p>将在浏览器中搜索 SKU: <strong>${escapeHtml(sku)}</strong></p>
       <a href="${searchUrl}" target="_blank" class="btn-primary" style="display:inline-block;margin-top:12px;text-decoration:none;">打开搜索</a>
     </div>
@@ -364,7 +374,7 @@ function deleteTodo(id) {
 function initVoice() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    document.getElementById('voice-btn').style.display = 'none';
+    document.getElementById('voice-btn').innerHTML = '<span>⚠️ 设备不支持语音</span>';
     return;
   }
   recognition = new SpeechRecognition();
@@ -411,19 +421,16 @@ function stopVoiceInput(e) {
 }
 
 function processVoiceText(text) {
-  // 智能解析语音内容
   text = text.trim();
   if (!text) return;
   showToast('识别到: ' + text);
 
-  // 检测是否是更新进度的指令
   const todos = DB.get('todos', []);
   const activeTodos = todos.filter(t => !t.completed);
 
   // 尝试匹配现有待办
   for (const t of activeTodos) {
     if (text.includes(t.title) || t.title.includes(text.slice(0, 6))) {
-      // 更新进度
       t.note = (t.note ? t.note + '\n' : '') + formatDateTime() + ': ' + text;
       DB.set('todos', todos);
       renderTodo();
@@ -432,7 +439,7 @@ function processVoiceText(text) {
     }
   }
 
-  // 否则创建新待办
+  // 创建新待办
   const newTodo = {
     id: Date.now().toString(),
     title: text,
@@ -446,6 +453,34 @@ function processVoiceText(text) {
   DB.set('todos', todos);
   renderTodo();
   showToast('已添加待办: ' + text);
+}
+
+// ==================== 行业动态 ====================
+function renderNews() {
+  const filter = document.getElementById('news-filter').value;
+  let news = NEWS_DATA;
+  if (filter !== 'all') news = news.filter(n => n.tag === filter);
+
+  const list = document.getElementById('news-list');
+  const empty = document.getElementById('news-empty');
+  list.innerHTML = '';
+  if (news.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  news.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'news-card';
+    card.innerHTML = `
+      <div class="news-card-header">
+        <span class="news-tag ${item.tag}">${item.tagText}</span>
+        <span style="font-size:12px;color:var(--text-secondary);margin-left:auto;">${item.date}</span>
+      </div>
+      <div class="news-title">${escapeHtml(item.title)}</div>
+      <div class="news-desc">${escapeHtml(item.desc)}</div>
+      <div class="news-date">来源: ${escapeHtml(item.source)}</div>
+    `;
+    list.appendChild(card);
+  });
 }
 
 // ==================== AI 周报 ====================
@@ -507,13 +542,11 @@ function generateWeeklyReport() {
   const startStr = `${startDate.getMonth()+1}月${startDate.getDate()}日`;
   const endStr = `${endDate.getMonth()+1}月${endDate.getDate()}日`;
 
-  // 待办统计
   const todos = DB.get('todos', []);
   const createdInRange = todos.filter(t => t.createdAt >= startDate.getTime() && t.createdAt <= endDate.getTime() + 86400000);
   const doneInRange = createdInRange.filter(t => t.completed);
   const pendingHigh = todos.filter(t => !t.completed && t.priority === 'high').length;
 
-  // 客诉统计
   const records = DB.get('feishu_records', []);
   const cfg = getFeishuConfig();
   const statusField = cfg.statusField || '状态';
@@ -540,7 +573,6 @@ function generateWeeklyReport() {
   report += `   ${activeComplaints > 5 ? '⚠️ 客诉积压较多，需重点关注' : '✓ 客诉处理进度正常'}\n`;
   report += `\n`;
 
-  // 已完成的待办列表
   if (doneInRange.length > 0) {
     report += `📝 三、完成事项清单\n`;
     doneInRange.forEach((t, i) => {
@@ -550,7 +582,6 @@ function generateWeeklyReport() {
     report += `\n`;
   }
 
-  // 待处理事项
   const pendingTodos = todos.filter(t => !t.completed);
   if (pendingTodos.length > 0) {
     report += `📌 四、下周/下阶段计划\n`;
@@ -581,8 +612,8 @@ function copyReport() {
     .catch(() => showToast('复制失败'));
 }
 
-// ==================== 设置 - 飞书配置 ====================
-function loadFeishuConfig() {
+// ==================== 设置 ====================
+function loadSettings() {
   const cfg = getFeishuConfig();
   document.getElementById('fs-app-id').value = cfg.appId || '';
   document.getElementById('fs-app-secret').value = cfg.appSecret || '';
@@ -590,6 +621,9 @@ function loadFeishuConfig() {
   document.getElementById('fs-table-id').value = cfg.tableId || '';
   document.getElementById('fs-status-field').value = cfg.statusField || '状态';
   document.getElementById('fs-done-value').value = cfg.doneValue || '已完成';
+
+  const whisperKey = DB.get('whisper_key', '');
+  if (whisperKey) document.getElementById('whisper-key').value = '已配置（隐藏）';
 }
 
 function saveFeishuConfig() {
@@ -607,6 +641,13 @@ function saveFeishuConfig() {
   showToast('飞书配置已保存');
 }
 
+function saveWhisperKey() {
+  const key = document.getElementById('whisper-key').value.trim();
+  if (!key) { showToast('请输入 API Key'); return; }
+  DB.set('whisper_key', key);
+  showToast('Whisper API Key 已保存');
+}
+
 async function testFeishuConnection() {
   saveFeishuConfig();
   showToast('正在测试连接...');
@@ -618,7 +659,7 @@ async function testFeishuConnection() {
   }
 }
 
-// ==================== 设置 - 数据管理 ====================
+// ==================== 数据管理 ====================
 function exportData() {
   const data = {
     todos: DB.get('todos', []),
@@ -657,7 +698,7 @@ function importData(input) {
 
 function clearAllData() {
   showConfirm('⚠️ 确定清空所有数据？不可恢复！', () => {
-    ['todos', 'feishu_records', 'feishu_config', 'feishu_sync_time', 'last_report'].forEach(k => localStorage.removeItem('wa_' + k));
+    ['todos', 'feishu_records', 'feishu_config', 'feishu_sync_time', 'last_report', 'whisper_key'].forEach(k => localStorage.removeItem('wa_' + k));
     feishuTokenCache = null;
     renderPage(currentPage);
     initFeishuUI();

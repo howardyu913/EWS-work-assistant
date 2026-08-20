@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="工作助手">
+  <meta name="apple-mobile-web-app-title" content="EWS工作助手">
   <meta name="theme-color" content="#007AFF">
-  <title>工作助手</title>
+  <title>EWS工作助手</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
@@ -16,8 +16,7 @@
   <div id="app">
     <!-- 顶部栏 -->
     <header class="app-header">
-      <h1 id="page-title">工作助手</h1>
-      <button class="header-btn" id="header-action" style="display:none;"></button>
+      <h1 id="page-title">客诉管理</h1>
     </header>
 
     <!-- 主内容 -->
@@ -29,9 +28,9 @@
           <button onclick="navigateTo('settings')">去配置</button>
         </div>
         <div class="toolbar" id="complaint-toolbar" style="display:none;">
-          <button class="btn-primary" onclick="refreshFeishuData()">🔄 刷新</button>
-          <select id="complaint-filter" onchange="renderComplaint()">
-            <option value="all">全部</option>
+          <button class="btn-primary" onclick="refreshFeishuData()">🔄 刷新数据</button>
+          <select id="complaint-filter" onchange="renderComplaint()" style="padding:10px 12px;border-radius:12px;border:1px solid var(--border);font-size:14px;background:var(--card);">
+            <option value="all">全部未结</option>
             <option value="pending" selected>待处理</option>
             <option value="processing">处理中</option>
             <option value="urgent">紧急</option>
@@ -53,7 +52,9 @@
         </div>
         <ul class="list" id="complaint-list"></ul>
         <div class="empty-state" id="complaint-empty" style="display:none;">
-          <div class="empty-icon">📋</div>
+          <div class="empty-icon">
+            <svg class="icon-svg" style="width:48px;height:48px;stroke:var(--text-secondary);" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
           <p>暂无客诉数据</p>
           <p class="empty-sub">请在设置中配置飞书多维表格</p>
         </div>
@@ -73,15 +74,11 @@
           <div class="iframe-container">
             <iframe id="spare-iframe" src="https://ewssp.pythonanywhere.com/dashboard" frameborder="0" loading="lazy"></iframe>
           </div>
-          <div class="iframe-fallback" id="spare-fallback" style="display:none;">
-            <p>无法嵌入显示</p>
-            <a href="https://ewssp.pythonanywhere.com/dashboard" target="_blank" class="btn-primary">在浏览器中打开</a>
-          </div>
         </div>
         <div id="spare-search" class="spare-panel">
           <div class="search-box">
             <input type="text" id="sku-input" placeholder="输入SKU编号..." onkeypress="if(event.key==='Enter')searchSKU()">
-            <button onclick="searchSKU()">🔍 查找</button>
+            <button onclick="searchSKU()">查找</button>
           </div>
           <div id="sku-result"></div>
         </div>
@@ -89,18 +86,14 @@
 
       <!-- ===== 待办模块 ===== -->
       <section id="page-todo" class="page">
-        <div class="toolbar">
-          <button class="btn-voice" id="voice-btn" ontouchstart="startVoiceInput(event)" ontouchend="stopVoiceInput(event)" onmousedown="startVoiceInput(event)" onmouseup="stopVoiceInput(event)">
-            <span class="voice-icon">🎤</span>
-            <span class="voice-label">按住说话</span>
-          </button>
-          <button class="btn-primary" onclick="showModal('todo')">+ 手动添加</button>
+        <!-- 语音提示卡片 -->
+        <div class="voice-tip-card" id="voice-tip" style="display:none;">
+          <h4>💡 语音识别提示</h4>
+          <p>当前使用设备自带语音识别，准确度有限。建议：说话清晰、语速适中、使用简短句子。如需更高准确度，可在设置中配置 Whisper API Key。</p>
         </div>
-        <div class="voice-hint" id="voice-hint" style="display:none;">
-          <div class="voice-wave">
-            <span></span><span></span><span></span><span></span><span></span>
-          </div>
-          <p>正在聆听... 松开结束</p>
+
+        <div class="toolbar">
+          <button class="btn-primary" onclick="showModal('todo')">+ 手动添加</button>
         </div>
         <div class="todo-filter-bar">
           <button class="filter-btn active" data-filter="active" onclick="setTodoFilter('active')">进行中</button>
@@ -109,16 +102,33 @@
         </div>
         <ul class="list" id="todo-list"></ul>
         <div class="empty-state" id="todo-empty" style="display:none;">
-          <div class="empty-icon">✅</div>
+          <svg class="icon-svg" style="width:48px;height:48px;stroke:var(--text-secondary);margin-bottom:12px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
           <p>暂无待办事项</p>
-          <p class="empty-sub">按住 🎤 按钮说话快速添加</p>
+          <p class="empty-sub">点击底部麦克风按钮说话快速添加</p>
+        </div>
+      </section>
+
+      <!-- ===== 行业动态 ===== -->
+      <section id="page-news" class="page">
+        <div class="toolbar" style="margin-bottom:16px;">
+          <select id="news-filter" onchange="renderNews()" style="padding:10px 12px;border-radius:12px;border:1px solid var(--border);font-size:14px;background:var(--card);flex:1;">
+            <option value="all">全部动态</option>
+            <option value="export">出口数据</option>
+            <option value="market">市场行情</option>
+            <option value="policy">政策法规</option>
+          </select>
+          <button class="btn-primary" onclick="renderNews()" style="margin-left:10px;">🔄 刷新</button>
+        </div>
+        <div id="news-list"></div>
+        <div class="empty-state" id="news-empty" style="display:none;">
+          <p>暂无数据</p>
         </div>
       </section>
 
       <!-- ===== AI 周报 ===== -->
       <section id="page-report" class="page">
         <div class="report-header">
-          <h2>🤖 AI 周报生成</h2>
+          <h2>📊 AI 周报生成</h2>
           <p>基于本周数据自动生成工作总结</p>
         </div>
         <div class="report-range">
@@ -130,9 +140,9 @@
           </select>
         </div>
         <div class="report-stats" id="report-stats">
-          <div class="stat-card"><div class="stat-num" id="r-todo-done">0</div><div class="stat-label">待办完成</div></div>
-          <div class="stat-card"><div class="stat-num" id="r-todo-total">0</div><div class="stat-label">待办总数</div></div>
-          <div class="stat-card"><div class="stat-num" id="r-complaint">0</div><div class="stat-label">客诉处理</div></div>
+          <div class="summary-card"><div class="summary-num" id="r-todo-done">0</div><div class="summary-label">待办完成</div></div>
+          <div class="summary-card"><div class="summary-num" id="r-todo-total">0</div><div class="summary-label">待办总数</div></div>
+          <div class="summary-card"><div class="summary-num" id="r-complaint">0</div><div class="summary-label">客诉处理</div></div>
         </div>
         <div class="report-preview" id="report-preview">
           <p class="report-placeholder">点击生成按钮创建周报</p>
@@ -145,24 +155,65 @@
 
       <!-- ===== 设置 ===== -->
       <section id="page-settings" class="page">
+        <!-- 飞书配置 -->
         <div class="settings-group">
-          <h3>🔷 飞书客诉配置</h3>
+          <h3>
+            <svg class="icon-svg" style="width:20px;height:20px;stroke:var(--primary);" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            飞书客诉接入
+          </h3>
           <p class="setting-desc">配置后可在客诉模块自动同步多维表格数据</p>
+
+          <div style="background:var(--bg);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;"><strong>📋 接入流程（你已有组织，跳过第1步）：</strong></p>
+            <div class="flow-steps">
+              <div class="flow-step">
+                <div class="flow-step-content">
+                  <div class="flow-step-title">创建企业自建应用</div>
+                  <div class="flow-step-desc">访问 <a href="https://open.feishu.cn" target="_blank" style="color:var(--primary);">open.feishu.cn</a> → 开发者后台 → 创建企业自建应用</div>
+                </div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-step-content">
+                  <div class="flow-step-title">开通权限</div>
+                  <div class="flow-step-desc">权限管理 → 开通权限 → 搜索 bitable → 勾选「查看、评论、编辑和管理多维表格」→ 确认开通</div>
+                </div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-step-content">
+                  <div class="flow-step-title">发布应用</div>
+                  <div class="flow-step-desc">版本管理与发布 → 创建版本（1.0.0）→ 保存 → 申请发布（你是管理员，直接通过）</div>
+                </div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-step-content">
+                  <div class="flow-step-title">给表格授权</div>
+                  <div class="flow-step-desc">打开客诉多维表格 → 右上角「...」→「更多」→「添加文档应用」→ 搜索你的应用 → 添加</div>
+                </div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-step-content">
+                  <div class="flow-step-title">填写下方凭证</div>
+                  <div class="flow-step-desc">在应用「凭证与基础信息」获取 App ID 和 Secret，从表格 URL 提取 App Token 和 Table ID</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="form-row-stacked">
             <label>App ID</label>
-            <input type="text" id="fs-app-id" placeholder="飞书开放平台应用的 App ID">
+            <input type="text" id="fs-app-id" placeholder="例如：cli_xxxxxxxx">
           </div>
           <div class="form-row-stacked">
             <label>App Secret</label>
-            <input type="password" id="fs-app-secret" placeholder="飞书开放平台应用的 App Secret">
+            <input type="password" id="fs-app-secret" placeholder="例如：xxxxxxxxxxxxxxxx">
           </div>
           <div class="form-row-stacked">
-            <label>多维表格 App Token</label>
-            <input type="text" id="fs-app-token" placeholder="从多维表格URL中获取">
+            <label>多维表格 App Token（URL中base/后面的字符串）</label>
+            <input type="text" id="fs-app-token" placeholder="例如：Bascnxxxxxxxx">
           </div>
           <div class="form-row-stacked">
-            <label>数据表 Table ID</label>
-            <input type="text" id="fs-table-id" placeholder="从多维表格URL中获取">
+            <label>数据表 Table ID（URL中table=后面的字符串）</label>
+            <input type="text" id="fs-table-id" placeholder="例如：tblxxxxxxxx">
           </div>
           <div class="form-row-stacked">
             <label>状态字段名</label>
@@ -172,62 +223,100 @@
             <label>已完成状态值</label>
             <input type="text" id="fs-done-value" value="已完成" placeholder="例如：已完成/Closed/已关闭">
           </div>
-          <button class="btn-primary" onclick="saveFeishuConfig()">💾 保存配置</button>
-          <button class="btn-secondary" onclick="testFeishuConnection()" style="margin-top:8px;">🔗 测试连接</button>
+          <button class="btn-primary" onclick="saveFeishuConfig()" style="width:100%;">💾 保存配置</button>
+          <button class="btn-secondary" onclick="testFeishuConnection()" style="width:100%;margin-top:10px;">🔗 测试连接</button>
         </div>
 
+        <!-- Whisper API 配置（可选，提升语音识别） -->
         <div class="settings-group">
-          <h3>⚙️ 通用设置</h3>
+          <h3>
+            <svg class="icon-svg" style="width:20px;height:20px;stroke:var(--purple);" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            语音识别增强（可选）
+          </h3>
+          <p class="setting-desc">配置 OpenAI Whisper API Key 可大幅提升语音识别准确度</p>
+          <div class="form-row-stacked">
+            <label>OpenAI API Key（sk-开头）</label>
+            <input type="password" id="whisper-key" placeholder="sk-xxxxxxxx">
+          </div>
+          <button class="btn-secondary" onclick="saveWhisperKey()" style="width:100%;">保存 API Key</button>
+          <p style="font-size:12px;color:var(--text-secondary);margin-top:8px;">⚠️ API Key 仅存储在您的设备本地，不会上传到任何服务器</p>
+        </div>
+
+        <!-- 数据管理 -->
+        <div class="settings-group">
+          <h3>⚙️ 数据管理</h3>
           <button class="setting-btn" onclick="exportData()">📤 导出数据</button>
           <button class="setting-btn" onclick="document.getElementById('import-file').click()">📥 导入数据</button>
           <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(this)">
           <button class="setting-btn danger" onclick="clearAllData()">🗑️ 清空所有数据</button>
         </div>
 
-        <div class="settings-group">
-          <h3>📖 帮助</h3>
-          <div class="help-item">
-            <strong>如何获取飞书凭证？</strong>
-            <ol>
-              <li>访问 <a href="https://open.feishu.cn" target="_blank">open.feishu.cn</a> 创建企业自建应用</li>
-              <li>开通「多维表格」权限并发布应用</li>
-              <li>在应用凭证页面获取 App ID 和 App Secret</li>
-              <li>打开多维表格，从 URL 中提取 App Token 和 Table ID</li>
-            </ol>
-          </div>
-        </div>
-
+        <!-- 关于 -->
         <div class="settings-group">
           <h3>ℹ️ 关于</h3>
-          <div class="setting-item"><span>版本</span><span>2.0.0</span></div>
+          <div class="setting-item"><span>版本</span><span>3.0.0</span></div>
           <div class="setting-item"><span>数据存储</span><span>本地 localStorage</span></div>
         </div>
       </section>
     </main>
 
+    <!-- 底部语音输入栏（仅在待办页面显示） -->
+    <div class="voice-bar" id="voice-bar" style="display:none;">
+      <div class="voice-hint" id="voice-hint" style="display:none;">
+        <div class="voice-wave">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <p>正在聆听... 松开结束</p>
+      </div>
+      <button class="voice-btn" id="voice-btn" ontouchstart="startVoiceInput(event)" ontouchend="stopVoiceInput(event)" onmousedown="startVoiceInput(event)" onmouseup="stopVoiceInput(event)">
+        <svg class="icon-svg" style="width:22px;height:22px;stroke:#fff;" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <span>按住说话添加待办</span>
+      </button>
+    </div>
+
     <!-- 底部导航 -->
     <nav class="app-nav">
       <button class="nav-btn active" data-page="complaint" onclick="navigateTo('complaint')">
-        <span class="nav-icon">📋</span><span class="nav-label">客诉</span>
+        <div class="nav-icon-wrap">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <span class="nav-label">客诉</span>
       </button>
       <button class="nav-btn" data-page="spare" onclick="navigateTo('spare')">
-        <span class="nav-icon">🔧</span><span class="nav-label">修补件</span>
+        <div class="nav-icon-wrap">
+          <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <span class="nav-label">修补件</span>
       </button>
       <button class="nav-btn" data-page="todo" onclick="navigateTo('todo')">
-        <span class="nav-icon">✅</span><span class="nav-label">待办</span>
+        <div class="nav-icon-wrap">
+          <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <span class="nav-label">待办</span>
+      </button>
+      <button class="nav-btn" data-page="news" onclick="navigateTo('news')">
+        <div class="nav-icon-wrap">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M18 18h-8"/><path d="M18 10h-8"/></svg>
+        </div>
+        <span class="nav-label">动态</span>
       </button>
       <button class="nav-btn" data-page="report" onclick="navigateTo('report')">
-        <span class="nav-icon">📊</span><span class="nav-label">周报</span>
+        <div class="nav-icon-wrap">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        </div>
+        <span class="nav-label">周报</span>
       </button>
       <button class="nav-btn" data-page="settings" onclick="navigateTo('settings')">
-        <span class="nav-icon">⚙️</span><span class="nav-label">设置</span>
+        <div class="nav-icon-wrap">
+          <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <span class="nav-label">设置</span>
       </button>
     </nav>
   </div>
 
   <!-- ============ 模态框 ============ -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-    <!-- 待办模态框 -->
     <div class="modal" id="modal-todo" onclick="event.stopPropagation()">
       <h3 id="modal-todo-title">新建待办</h3>
       <input type="text" id="todo-input-title" placeholder="待办内容">
@@ -250,7 +339,6 @@
       </div>
     </div>
 
-    <!-- 客诉详情模态框 -->
     <div class="modal modal-large" id="modal-complaint" onclick="event.stopPropagation()">
       <h3>客诉详情</h3>
       <div class="complaint-detail" id="complaint-detail-content"></div>
