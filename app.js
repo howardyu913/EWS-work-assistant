@@ -60,6 +60,12 @@ function navigateTo(page) {
 }
 
 function renderPage(page) {
+  if (page === 'complaint') { initFeishuUI(); renderComplaint(); }
+  if (page === 'spare') initSparePage();
+  if (page === 'todo') { renderTodo(); document.getElementById('voice-tip').style.display = 'block'; }
+  if (page === 'report') updateReportPreview();
+  if (page === 'settings') loadSettings();
+}
   if (page === 'complaint') renderComplaint();
   if (page === 'spare') initSparePage();
   if (page === 'todo') { renderTodo(); document.getElementById('voice-tip').style.display = 'block'; }
