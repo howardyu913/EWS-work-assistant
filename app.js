@@ -23,11 +23,50 @@ let mediaRecorder = null;
 document.addEventListener('DOMContentLoaded', () => {
   initVoice();
   initFeishuUI();
+  initNav();
+  renderPage(currentPage);
+  registerSW();
+});
+document.addEventListener('DOMContentLoaded', () => {
+  initVoice();
+  initFeishuUI();
   renderPage(currentPage);
   registerSW();
 });
 
 function registerSW() {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ---------- 底部导航事件委托（解决 iOS PWA onclick 失效）----------
+function initNav() {
+  const nav = document.getElementById('app-nav');
+  if (!nav) return;
+
+  let touchHandled = false;
+
+  // touchend 在 iOS PWA 中更可靠
+  nav.addEventListener('touchend', (e) => {
+    const btn = e.target.closest('.nav-btn');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    touchHandled = true;
+    const page = btn.dataset.page;
+    if (page) navigateTo(page);
+    setTimeout(() => { touchHandled = false; }, 300);
+  }, { passive: false });
+
+  // click 作为后备（桌面端/非触摸设备）
+  nav.addEventListener('click', (e) => {
+    if (touchHandled) return;
+    const btn = e.target.closest('.nav-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const page = btn.dataset.page;
+    if (page) navigateTo(page);
+  });
+}
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
