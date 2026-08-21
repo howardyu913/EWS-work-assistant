@@ -14,12 +14,10 @@
 </head>
 <body>
   <div id="app">
-    <!-- 顶部栏 -->
     <header class="app-header">
       <h1 id="page-title">客诉管理</h1>
     </header>
 
-    <!-- 主内容 -->
     <main class="app-main" id="app-main">
       <!-- ===== 客诉模块 ===== -->
       <section id="page-complaint" class="page active">
@@ -37,24 +35,13 @@
           </select>
         </div>
         <div class="complaint-summary" id="complaint-summary" style="display:none;">
-          <div class="summary-card">
-            <div class="summary-num" id="summary-total">0</div>
-            <div class="summary-label">总客诉</div>
-          </div>
-          <div class="summary-card">
-            <div class="summary-num" id="summary-pending">0</div>
-            <div class="summary-label">待处理</div>
-          </div>
-          <div class="summary-card">
-            <div class="summary-num" id="summary-urgent">0</div>
-            <div class="summary-label">紧急</div>
-          </div>
+          <div class="summary-card"><div class="summary-num" id="summary-total">0</div><div class="summary-label">总客诉</div></div>
+          <div class="summary-card"><div class="summary-num" id="summary-pending">0</div><div class="summary-label">待处理</div></div>
+          <div class="summary-card"><div class="summary-num" id="summary-urgent">0</div><div class="summary-label">紧急</div></div>
         </div>
         <ul class="list" id="complaint-list"></ul>
         <div class="empty-state" id="complaint-empty" style="display:none;">
-          <div class="empty-icon">
-            <svg class="icon-svg" style="width:48px;height:48px;stroke:var(--text-secondary);" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          </div>
+          <svg class="icon-svg" style="width:48px;height:48px;stroke:var(--text-secondary);" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           <p>暂无客诉数据</p>
           <p class="empty-sub">请在设置中配置飞书多维表格</p>
         </div>
@@ -86,12 +73,10 @@
 
       <!-- ===== 待办模块 ===== -->
       <section id="page-todo" class="page">
-        <!-- 语音提示卡片 -->
         <div class="voice-tip-card" id="voice-tip" style="display:none;">
           <h4>💡 语音识别提示</h4>
-          <p>当前使用设备自带语音识别，准确度有限。建议：说话清晰、语速适中、使用简短句子。如需更高准确度，可在设置中配置 Whisper API Key。</p>
+          <p>当前使用设备自带语音识别，准确度有限。建议：说话清晰、语速适中、使用简短句子。</p>
         </div>
-
         <div class="toolbar">
           <button class="btn-primary" onclick="showModal('todo')">+ 手动添加</button>
         </div>
@@ -105,23 +90,6 @@
           <svg class="icon-svg" style="width:48px;height:48px;stroke:var(--text-secondary);margin-bottom:12px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
           <p>暂无待办事项</p>
           <p class="empty-sub">点击底部麦克风按钮说话快速添加</p>
-        </div>
-      </section>
-
-      <!-- ===== 行业动态 ===== -->
-      <section id="page-news" class="page">
-        <div class="toolbar" style="margin-bottom:16px;">
-          <select id="news-filter" onchange="renderNews()" style="padding:10px 12px;border-radius:12px;border:1px solid var(--border);font-size:14px;background:var(--card);flex:1;">
-            <option value="all">全部动态</option>
-            <option value="export">出口数据</option>
-            <option value="market">市场行情</option>
-            <option value="policy">政策法规</option>
-          </select>
-          <button class="btn-primary" onclick="renderNews()" style="margin-left:10px;">🔄 刷新</button>
-        </div>
-        <div id="news-list"></div>
-        <div class="empty-state" id="news-empty" style="display:none;">
-          <p>暂无数据</p>
         </div>
       </section>
 
@@ -155,94 +123,32 @@
 
       <!-- ===== 设置 ===== -->
       <section id="page-settings" class="page">
-        <!-- 飞书配置 -->
         <div class="settings-group">
           <h3>
             <svg class="icon-svg" style="width:20px;height:20px;stroke:var(--primary);" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             飞书客诉接入
           </h3>
           <p class="setting-desc">配置后可在客诉模块自动同步多维表格数据</p>
-
           <div style="background:var(--bg);border-radius:12px;padding:16px;margin-bottom:16px;">
             <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;"><strong>📋 接入流程（你已有组织，跳过第1步）：</strong></p>
             <div class="flow-steps">
-              <div class="flow-step">
-                <div class="flow-step-content">
-                  <div class="flow-step-title">创建企业自建应用</div>
-                  <div class="flow-step-desc">访问 <a href="https://open.feishu.cn" target="_blank" style="color:var(--primary);">open.feishu.cn</a> → 开发者后台 → 创建企业自建应用</div>
-                </div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-step-content">
-                  <div class="flow-step-title">开通权限</div>
-                  <div class="flow-step-desc">权限管理 → 开通权限 → 搜索 bitable → 勾选「查看、评论、编辑和管理多维表格」→ 确认开通</div>
-                </div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-step-content">
-                  <div class="flow-step-title">发布应用</div>
-                  <div class="flow-step-desc">版本管理与发布 → 创建版本（1.0.0）→ 保存 → 申请发布（你是管理员，直接通过）</div>
-                </div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-step-content">
-                  <div class="flow-step-title">给表格授权</div>
-                  <div class="flow-step-desc">打开客诉多维表格 → 右上角「...」→「更多」→「添加文档应用」→ 搜索你的应用 → 添加</div>
-                </div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-step-content">
-                  <div class="flow-step-title">填写下方凭证</div>
-                  <div class="flow-step-desc">在应用「凭证与基础信息」获取 App ID 和 Secret，从表格 URL 提取 App Token 和 Table ID</div>
-                </div>
-              </div>
+              <div class="flow-step"><div class="flow-step-content"><div class="flow-step-title">创建企业自建应用</div><div class="flow-step-desc">访问 <a href="https://open.feishu.cn" target="_blank" style="color:var(--primary);">open.feishu.cn</a> → 开发者后台 → 创建企业自建应用</div></div></div>
+              <div class="flow-step"><div class="flow-step-content"><div class="flow-step-title">开通权限</div><div class="flow-step-desc">权限管理 → 开通权限 → 搜索 bitable → 勾选「查看、评论、编辑和管理多维表格」→ 确认开通</div></div></div>
+              <div class="flow-step"><div class="flow-step-content"><div class="flow-step-title">发布应用</div><div class="flow-step-desc">版本管理与发布 → 创建版本（1.0.0）→ 保存 → 申请发布（你是管理员，直接通过）</div></div></div>
+              <div class="flow-step"><div class="flow-step-content"><div class="flow-step-title">给表格授权</div><div class="flow-step-desc">打开客诉多维表格 → 右上角「...」→「更多」→「添加文档应用」→ 搜索你的应用 → 添加</div></div></div>
+              <div class="flow-step"><div class="flow-step-content"><div class="flow-step-title">填写下方凭证</div><div class="flow-step-desc">在应用「凭证与基础信息」获取 App ID 和 Secret，从表格 URL 提取 App Token 和 Table ID</div></div></div>
             </div>
           </div>
-
-          <div class="form-row-stacked">
-            <label>App ID</label>
-            <input type="text" id="fs-app-id" placeholder="例如：cli_xxxxxxxx">
-          </div>
-          <div class="form-row-stacked">
-            <label>App Secret</label>
-            <input type="password" id="fs-app-secret" placeholder="例如：xxxxxxxxxxxxxxxx">
-          </div>
-          <div class="form-row-stacked">
-            <label>多维表格 App Token（URL中base/后面的字符串）</label>
-            <input type="text" id="fs-app-token" placeholder="例如：Bascnxxxxxxxx">
-          </div>
-          <div class="form-row-stacked">
-            <label>数据表 Table ID（URL中table=后面的字符串）</label>
-            <input type="text" id="fs-table-id" placeholder="例如：tblxxxxxxxx">
-          </div>
-          <div class="form-row-stacked">
-            <label>状态字段名</label>
-            <input type="text" id="fs-status-field" value="状态" placeholder="多维表格中代表状态的字段名">
-          </div>
-          <div class="form-row-stacked">
-            <label>已完成状态值</label>
-            <input type="text" id="fs-done-value" value="已完成" placeholder="例如：已完成/Closed/已关闭">
-          </div>
+          <div class="form-row-stacked"><label>App ID</label><input type="text" id="fs-app-id" placeholder="例如：cli_xxxxxxxx"></div>
+          <div class="form-row-stacked"><label>App Secret</label><input type="password" id="fs-app-secret" placeholder="例如：xxxxxxxxxxxxxxxx"></div>
+          <div class="form-row-stacked"><label>多维表格 App Token（URL中base/后面的字符串）</label><input type="text" id="fs-app-token" placeholder="例如：Bascnxxxxxxxx"></div>
+          <div class="form-row-stacked"><label>数据表 Table ID（URL中table=后面的字符串）</label><input type="text" id="fs-table-id" placeholder="例如：tblxxxxxxxx"></div>
+          <div class="form-row-stacked"><label>状态字段名</label><input type="text" id="fs-status-field" value="状态" placeholder="多维表格中代表状态的字段名"></div>
+          <div class="form-row-stacked"><label>已完成状态值</label><input type="text" id="fs-done-value" value="已完成" placeholder="例如：已完成/Closed/已关闭"></div>
           <button class="btn-primary" onclick="saveFeishuConfig()" style="width:100%;">💾 保存配置</button>
           <button class="btn-secondary" onclick="testFeishuConnection()" style="width:100%;margin-top:10px;">🔗 测试连接</button>
         </div>
 
-        <!-- Whisper API 配置（可选，提升语音识别） -->
-        <div class="settings-group">
-          <h3>
-            <svg class="icon-svg" style="width:20px;height:20px;stroke:var(--purple);" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-            语音识别增强（可选）
-          </h3>
-          <p class="setting-desc">配置 OpenAI Whisper API Key 可大幅提升语音识别准确度</p>
-          <div class="form-row-stacked">
-            <label>OpenAI API Key（sk-开头）</label>
-            <input type="password" id="whisper-key" placeholder="sk-xxxxxxxx">
-          </div>
-          <button class="btn-secondary" onclick="saveWhisperKey()" style="width:100%;">保存 API Key</button>
-          <p style="font-size:12px;color:var(--text-secondary);margin-top:8px;">⚠️ API Key 仅存储在您的设备本地，不会上传到任何服务器</p>
-        </div>
-
-        <!-- 数据管理 -->
         <div class="settings-group">
           <h3>⚙️ 数据管理</h3>
           <button class="setting-btn" onclick="exportData()">📤 导出数据</button>
@@ -251,21 +157,17 @@
           <button class="setting-btn danger" onclick="clearAllData()">🗑️ 清空所有数据</button>
         </div>
 
-        <!-- 关于 -->
         <div class="settings-group">
           <h3>ℹ️ 关于</h3>
-          <div class="setting-item"><span>版本</span><span>3.0.0</span></div>
+          <div class="setting-item"><span>版本</span><span>3.0.1</span></div>
           <div class="setting-item"><span>数据存储</span><span>本地 localStorage</span></div>
         </div>
       </section>
     </main>
 
-    <!-- 底部语音输入栏（仅在待办页面显示） -->
     <div class="voice-bar" id="voice-bar" style="display:none;">
       <div class="voice-hint" id="voice-hint" style="display:none;">
-        <div class="voice-wave">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
+        <div class="voice-wave"><span></span><span></span><span></span><span></span><span></span></div>
         <p>正在聆听... 松开结束</p>
       </div>
       <button class="voice-btn" id="voice-btn" ontouchstart="startVoiceInput(event)" ontouchend="stopVoiceInput(event)" onmousedown="startVoiceInput(event)" onmouseup="stopVoiceInput(event)">
@@ -274,48 +176,30 @@
       </button>
     </div>
 
-    <!-- 底部导航 -->
     <nav class="app-nav">
       <button class="nav-btn active" data-page="complaint" onclick="navigateTo('complaint')">
-        <div class="nav-icon-wrap">
-          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        </div>
+        <div class="nav-icon-wrap"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
         <span class="nav-label">客诉</span>
       </button>
       <button class="nav-btn" data-page="spare" onclick="navigateTo('spare')">
-        <div class="nav-icon-wrap">
-          <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </div>
+        <div class="nav-icon-wrap"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
         <span class="nav-label">修补件</span>
       </button>
       <button class="nav-btn" data-page="todo" onclick="navigateTo('todo')">
-        <div class="nav-icon-wrap">
-          <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-        </div>
+        <div class="nav-icon-wrap"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
         <span class="nav-label">待办</span>
       </button>
-      <button class="nav-btn" data-page="news" onclick="navigateTo('news')">
-        <div class="nav-icon-wrap">
-          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M18 18h-8"/><path d="M18 10h-8"/></svg>
-        </div>
-        <span class="nav-label">动态</span>
-      </button>
       <button class="nav-btn" data-page="report" onclick="navigateTo('report')">
-        <div class="nav-icon-wrap">
-          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-        </div>
+        <div class="nav-icon-wrap"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
         <span class="nav-label">周报</span>
       </button>
       <button class="nav-btn" data-page="settings" onclick="navigateTo('settings')">
-        <div class="nav-icon-wrap">
-          <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </div>
+        <div class="nav-icon-wrap"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
         <span class="nav-label">设置</span>
       </button>
     </nav>
   </div>
 
-  <!-- ============ 模态框 ============ -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
     <div class="modal" id="modal-todo" onclick="event.stopPropagation()">
       <h3 id="modal-todo-title">新建待办</h3>
@@ -338,7 +222,6 @@
         <button class="btn-primary" onclick="saveTodo()">保存</button>
       </div>
     </div>
-
     <div class="modal modal-large" id="modal-complaint" onclick="event.stopPropagation()">
       <h3>客诉详情</h3>
       <div class="complaint-detail" id="complaint-detail-content"></div>
@@ -348,7 +231,6 @@
     </div>
   </div>
 
-  <!-- 确认对话框 -->
   <div class="confirm-overlay" id="confirm-overlay">
     <div class="confirm-box">
       <p id="confirm-msg">确定要删除吗？</p>
@@ -359,7 +241,6 @@
     </div>
   </div>
 
-  <!-- Toast 提示 -->
   <div class="toast" id="toast"></div>
 
   <script src="app.js"></script>

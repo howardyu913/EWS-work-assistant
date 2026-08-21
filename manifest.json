@@ -1,7 +1,7 @@
 {
   "name": "EWS工作助手",
   "short_name": "EWS助手",
-  "description": "EWS工作助手 - 客诉/修补件/待办/行业动态",
+  "description": "EWS工作助手 - 客诉/修补件/待办/周报",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#F2F2F7",

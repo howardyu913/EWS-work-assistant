@@ -19,18 +19,6 @@ let isRecording = false;
 let audioChunks = [];
 let mediaRecorder = null;
 
-// ---------- 行业动态数据 ----------
-const NEWS_DATA = [
-  { id: 'n1', tag: 'export', tagText: '出口', title: '2026年Q1电动两轮车出口约720万辆，同比增长68.2%', desc: '海关总署数据显示，2026年第一季度中国电动两轮车出口保持高速增长，民营企业出口电动摩托车及脚踏车同比增长30%。', date: '2026-08-16', source: 'STARGO市场洞察' },
-  { id: 'n2', tag: 'market', tagText: '市场', title: '无锡锡山区电动两轮车出口额达2.87亿美元，同比增长33.7%', desc: '今年前四月，锡山区电动两轮车行业出口额达2.87亿美元，同比增长33.7%，出口已连续9年保持稳定增长。', date: '2026-06-08', source: '中国一带一路网' },
-  { id: 'n3', tag: 'policy', tagText: '政策', title: '工信部加强电动自行车锂电池回收利用体系建设', desc: '工信部、供销合作总社联合发布通知，进一步加强电动自行车锂离子电池回收利用体系建设，推动标准制定和宣贯培训。', date: '2026-04-06', source: 'Mysteel' },
-  { id: 'n4', tag: 'export', tagText: '出口', title: '浙江"新三样"产品出口额759.4亿元，同比增长51.7%', desc: '1-5月浙江省新能源汽车、储能锂电池、光伏等"新三样"产品出口额达759.4亿元，锂电池出口增长4成左右。', date: '2026-06-25', source: '海关总署' },
-  { id: 'n5', tag: 'market', tagText: '市场', title: '电动自行车位列MIC国际站重工行业订单量第一', desc: '在中国制造网"超级出海季"数据中，电动自行车位列重工行业订单量排行榜第一，在美、巴、俄、阿、墨五大市场高频出现。', date: '2026-05-16', source: '上海经信委' },
-  { id: 'n6', tag: 'policy', tagText: '政策', title: '欧盟LMT电池护照2027年2月18日起适用', desc: '欧盟委员会Regulation (EU) 2023/1542规定，电动自行车电池护照制度将于2027年2月18日正式实施，需提前准备合规。', date: '2026-08-16', source: 'STARGO' },
-  { id: 'n7', tag: 'market', tagText: '市场', title: '印尼镍铁出口政策反复，镍价持续上涨', desc: '印尼镍铁出口政策一度引发供应担忧，当前镍铁供应紧张，价格持续上涨。碳酸锂市场预计短期价格震荡于18-20万元/吨。', date: '2026-05-22', source: 'Mysteel' },
-  { id: 'n8', tag: 'export', tagText: '出口', title: '2026年1-2月锂电池出口142亿美元，增长46%', desc: '乘联分会数据显示，2026年1-2月锂电池出口额达142亿美元，同比增长46%，在出口退税减少前保持高位增速。', date: '2026-04-09', source: '乘联分会' },
-];
-
 // ---------- 初始化 ----------
 document.addEventListener('DOMContentLoaded', () => {
   initVoice();
@@ -49,7 +37,7 @@ function navigateTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page)?.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
-  const titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', news: '行业动态', report: 'AI周报', settings: '设置' };
+  const titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', report: 'AI周报', settings: '设置' };
   document.getElementById('page-title').textContent = titles[page] || '工作助手';
 
   // 语音按钮只在待办页面显示
@@ -62,7 +50,6 @@ function renderPage(page) {
   if (page === 'complaint') renderComplaint();
   if (page === 'spare') initSparePage();
   if (page === 'todo') { renderTodo(); document.getElementById('voice-tip').style.display = 'block'; }
-  if (page === 'news') renderNews();
   if (page === 'report') updateReportPreview();
   if (page === 'settings') loadSettings();
 }
@@ -453,34 +440,6 @@ function processVoiceText(text) {
   DB.set('todos', todos);
   renderTodo();
   showToast('已添加待办: ' + text);
-}
-
-// ==================== 行业动态 ====================
-function renderNews() {
-  const filter = document.getElementById('news-filter').value;
-  let news = NEWS_DATA;
-  if (filter !== 'all') news = news.filter(n => n.tag === filter);
-
-  const list = document.getElementById('news-list');
-  const empty = document.getElementById('news-empty');
-  list.innerHTML = '';
-  if (news.length === 0) { empty.style.display = 'block'; return; }
-  empty.style.display = 'none';
-
-  news.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'news-card';
-    card.innerHTML = `
-      <div class="news-card-header">
-        <span class="news-tag ${item.tag}">${item.tagText}</span>
-        <span style="font-size:12px;color:var(--text-secondary);margin-left:auto;">${item.date}</span>
-      </div>
-      <div class="news-title">${escapeHtml(item.title)}</div>
-      <div class="news-desc">${escapeHtml(item.desc)}</div>
-      <div class="news-date">来源: ${escapeHtml(item.source)}</div>
-    `;
-    list.appendChild(card);
-  });
 }
 
 // ==================== AI 周报 ====================
