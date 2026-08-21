@@ -243,6 +243,20 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=302"></script>
+  <script>
+    // 内联导航保底：即使 app.js 缓存/加载失败，导航也能工作
+    window.navigateTo = function(page) {
+      document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+      var el = document.getElementById('page-' + page);
+      if (el) el.classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.page === page); });
+      var titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', report: 'AI周报', settings: '设置' };
+      var t = document.getElementById('page-title');
+      if (t) t.textContent = titles[page] || '工作助手';
+      var v = document.getElementById('voice-bar');
+      if (v) v.style.display = (page === 'todo') ? 'block' : 'none';
+    };
+  </script>"app.js"></script>
 </body>
 </html>
