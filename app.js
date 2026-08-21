@@ -86,7 +86,9 @@ async function getFeishuToken() {
     return { success: true, token: feishuTokenCache };
   }
   const cfg = getFeishuConfig();
-  if (!cfg.appId || !cfg.appSecret) {
+  const appId = (cfg.appId || '').trim();
+  const appSecret = (cfg.appSecret || '').trim();
+  if (!appId || !appSecret) {
     return { success: false, error: '缺少 App ID 或 App Secret' };
   }
   try {
@@ -95,22 +97,24 @@ async function getFeishuToken() {
     const res = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ app_id: cfg.appId, app_secret: cfg.appSecret }),
+      body: JSON.stringify({ app_id: appId, app_secret: appSecret }),
       signal: controller.signal
     });
     clearTimeout(timeoutId);
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
     if (data.code === 0 && data.tenant_access_token) {
       feishuTokenCache = data.tenant_access_token;
       feishuTokenExpiry = now + (data.expire || 7200) * 1000;
       return { success: true, token: feishuTokenCache };
     }
-    return { success: false, error: `飞书API错误 code=${data.code}: ${data.msg || '未知错误'}` };
+    return { success: false, error: `飞书API错误 code=${data.code || '?'}` + (data.msg ? `: ${data.msg}` : ` 原始响应: ${text.slice(0,100)}`) };
   } catch (e) {
     if (e.name === 'AbortError') {
       return { success: false, error: '请求超时（5秒）— 可能公司网络屏蔽了 open.feishu.cn，请切到4G' };
     }
-    return { success: false, error: `网络异常: ${e.message}` };
+    return { success: false, error: `网络异常: ${e.message || e}` };
   }
 }
 
@@ -614,7 +618,6 @@ function loadSettings() {
   const whisperKey = DB.get('whisper_key', '');
   const whisperEl = document.getElementById('whisper-key');
   if (whisperKey && whisperEl) whisperEl.value = '已配置（隐藏）';
-  if (whisperKey) document.getElementById('whisper-key').value = '已配置（隐藏）';
 }
 
 function saveFeishuConfig() {
