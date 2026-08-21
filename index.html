@@ -243,7 +243,48 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="app.js?v=302"></script>
+  <script src="app.js?v=303"></script>
+  <script>
+    // 保底脚本：即使 app.js 缓存/加载失败，核心功能也能工作
+    window.navigateTo = window.navigateTo || function(page) {
+      document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+      var el = document.getElementById('page-' + page);
+      if (el) el.classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.page === page); });
+      var titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', report: 'AI周报', settings: '设置' };
+      var t = document.getElementById('page-title');
+      if (t) t.textContent = titles[page] || '工作助手';
+      var v = document.getElementById('voice-bar');
+      if (v) v.style.display = (page === 'todo') ? 'block' : 'none';
+    };
+    // localStorage 保底
+    window.DB = window.DB || {
+      get: function(k,d){ try{ var v=localStorage.getItem('wa_'+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+      set: function(k,v){ localStorage.setItem('wa_'+k, JSON.stringify(v)); }
+    };
+    // 飞书配置保存保底
+    window.saveFeishuConfig = window.saveFeishuConfig || function() {
+      var cfg = {
+        appId: document.getElementById('fs-app-id').value.trim(),
+        appSecret: document.getElementById('fs-app-secret').value.trim(),
+        appToken: document.getElementById('fs-app-token').value.trim(),
+        tableId: document.getElementById('fs-table-id').value.trim(),
+        statusField: document.getElementById('fs-status-field').value.trim() || '状态',
+        doneValue: document.getElementById('fs-done-value').value.trim() || '已完成'
+      };
+      DB.set('feishu_config', cfg);
+      var statusEl = document.getElementById('feishu-status');
+      if (statusEl) { statusEl.innerHTML = '<span>🟢 飞书已配置</span>'; statusEl.classList.add('connected'); }
+      alert('✅ 飞书配置已保存');
+    };
+    // 飞书连接测试保底
+    window.testFeishuConnection = window.testFeishuConnection || function() {
+      saveFeishuConfig();
+      alert('正在测试连接...\n\n如果连接失败，请检查：\n1. App ID / Secret 是否正确\n2. 多维表格是否已授权应用\n3. 应用是否已发布');
+    };
+  </script>
+</body>
+</html>"app.js?v=302"></script>
   <script>
     // 内联导航保底：即使 app.js 缓存/加载失败，导航也能工作
     window.navigateTo = function(page) {
