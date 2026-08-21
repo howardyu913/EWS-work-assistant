@@ -72,13 +72,14 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   color: var(--text-secondary); font-size: 10px; font-weight: 500;
   padding: 4px 10px; cursor: pointer; transition: all 0.2s;
   position: relative;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  min-width: 56px;
 }
+.nav-btn > * { pointer-events: none; }
 .nav-btn .nav-icon-wrap {
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 8px; transition: all 0.2s;
-  pointer-events: none;
-}
   width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px; transition: all 0.2s;
@@ -88,7 +89,6 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 
 /* ---------- SVG 图标 ---------- */
 .icon-svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; pointer-events: none; }
-.nav-btn.active .icon-svg { stroke: var(--primary); }
 .nav-btn.active .icon-svg { stroke: var(--primary); }
 
 /* ---------- 按钮 ---------- */
