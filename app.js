@@ -1,5 +1,5 @@
 /* ========================
-   工作助手 v3.0.8 - 主逻辑
+   工作助手 v3.0.12 - 主逻辑
    ======================== */
 
 // ---------- 数据存储 ----------
@@ -86,21 +86,24 @@ async function getFeishuToken() {
     return { success: true, token: feishuTokenCache };
   }
   const cfg = getFeishuConfig();
-  const appId = (cfg.appId || '').trim();
-  const appSecret = (cfg.appSecret || '').trim();
+  // 彻底清理输入：去除首尾空白 + 零宽字符 + 方向控制字符
+  const clean = (s) => (s || '').replace(/^[\s\u200B-\u200F\uFEFF]+|[\s\u200B-\u200F\uFEFF]+$/g, '');
+  const appId = clean(cfg.appId);
+  const appSecret = clean(cfg.appSecret);
   if (!appId || !appSecret) {
     return { success: false, error: '缺少 App ID 或 App Secret' };
   }
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
+    // 使用 Promise.race 实现超时，兼容性优于 AbortController
+    const fetchPromise = fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ app_id: appId, app_secret: appSecret }),
-      signal: controller.signal
+      body: JSON.stringify({ app_id: appId, app_secret: appSecret })
     });
-    clearTimeout(timeoutId);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('TIMEOUT')), 8000)
+    );
+    const res = await Promise.race([fetchPromise, timeoutPromise]);
     const text = await res.text();
     let data;
     try { data = JSON.parse(text); } catch { data = { raw: text }; }
@@ -111,8 +114,8 @@ async function getFeishuToken() {
     }
     return { success: false, error: `飞书API错误 code=${data.code || '?'}` + (data.msg ? `: ${data.msg}` : ` 原始响应: ${text.slice(0,100)}`) };
   } catch (e) {
-    if (e.name === 'AbortError') {
-      return { success: false, error: '请求超时（5秒）— 可能公司网络屏蔽了 open.feishu.cn，请切到4G' };
+    if (e.message === 'TIMEOUT') {
+      return { success: false, error: '请求超时（8秒）— 可能公司网络屏蔽了 open.feishu.cn，请切到4G再试' };
     }
     return { success: false, error: `网络异常: ${e.message || e}` };
   }
