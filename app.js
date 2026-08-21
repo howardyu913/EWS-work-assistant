@@ -82,9 +82,13 @@ function getFeishuConfig() {
 
 async function getFeishuToken() {
   const now = Date.now();
-  if (feishuTokenCache && now < feishuTokenExpiry - 60000) return feishuTokenCache;
+  if (feishuTokenCache && now < feishuTokenExpiry - 60000) {
+    return { success: true, token: feishuTokenCache };
+  }
   const cfg = getFeishuConfig();
-  if (!cfg.appId || !cfg.appSecret) return null;
+  if (!cfg.appId || !cfg.appSecret) {
+    return { success: false, error: '缺少 App ID 或 App Secret' };
+  }
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -99,29 +103,25 @@ async function getFeishuToken() {
     if (data.code === 0 && data.tenant_access_token) {
       feishuTokenCache = data.tenant_access_token;
       feishuTokenExpiry = now + (data.expire || 7200) * 1000;
-      return feishuTokenCache;
+      return { success: true, token: feishuTokenCache };
     }
-    console.error('Feishu API error:', data);
+    return { success: false, error: `飞书API错误 code=${data.code}: ${data.msg || '未知错误'}` };
   } catch (e) {
-    if (e.name === 'AbortError') console.error('Feishu token: timeout after 5s');
-    else console.error('Feishu token error:', e);
+    if (e.name === 'AbortError') {
+      return { success: false, error: '请求超时（5秒）— 可能公司网络屏蔽了 open.feishu.cn，请切到4G' };
+    }
+    return { success: false, error: `网络异常: ${e.message}` };
   }
-  return null;
 }
 
 async function testFeishuConnection() {
-  try {
-    saveFeishuConfig();
-    showToast('正在测试连接…（最多5秒）');
-    const token = await getFeishuToken();
-    if (token) {
-      showToast('✅ 连接成功！');
-    } else {
-      showToast('❌ 连接失败：超时或网络受限，建议切到4G/外网再试');
-    }
-  } catch (e) {
-    console.error('testFeishuConnection error:', e);
-    showToast('❌ 测试异常，请重试');
+  saveFeishuConfig();
+  showToast('正在测试连接…（最多5秒）');
+  const result = await getFeishuToken();
+  if (result.success) {
+    showToast('✅ 连接成功！');
+  } else {
+    showToast('❌ ' + result.error);
   }
 }
 async function refreshFeishuData() {
@@ -134,8 +134,9 @@ async function refreshFeishuData() {
   const empty = document.getElementById('complaint-empty');
   loading.style.display = 'block'; list.style.display = 'none'; empty.style.display = 'none';
   try {
-    const token = await getFeishuToken();
-    if (!token) { showToast('飞书认证失败'); return; }
+    const result = await getFeishuToken();
+    if (!result.success) { showToast(result.error); return; }
+    const token = result.token;
     let allRecords = [];
     let hasMore = true;
     let pageToken = '';
@@ -611,6 +612,8 @@ function loadSettings() {
   document.getElementById('fs-done-value').value = cfg.doneValue || '已完成';
 
   const whisperKey = DB.get('whisper_key', '');
+  const whisperEl = document.getElementById('whisper-key');
+  if (whisperKey && whisperEl) whisperEl.value = '已配置（隐藏）';
   if (whisperKey) document.getElementById('whisper-key').value = '已配置（隐藏）';
 }
 
