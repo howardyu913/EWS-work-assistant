@@ -87,7 +87,7 @@ async function getFeishuToken() {
   if (!cfg.appId || !cfg.appSecret) return null;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     const res = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -101,13 +101,29 @@ async function getFeishuToken() {
       feishuTokenExpiry = now + (data.expire || 7200) * 1000;
       return feishuTokenCache;
     }
+    console.error('Feishu API error:', data);
   } catch (e) {
-    if (e.name === 'AbortError') console.error('Feishu token: timeout');
+    if (e.name === 'AbortError') console.error('Feishu token: timeout after 5s');
     else console.error('Feishu token error:', e);
   }
   return null;
 }
 
+async function testFeishuConnection() {
+  try {
+    saveFeishuConfig();
+    showToast('正在测试连接…（最多5秒）');
+    const token = await getFeishuToken();
+    if (token) {
+      showToast('✅ 连接成功！');
+    } else {
+      showToast('❌ 连接失败：超时或网络受限，建议切到4G/外网再试');
+    }
+  } catch (e) {
+    console.error('testFeishuConnection error:', e);
+    showToast('❌ 测试异常，请重试');
+  }
+}
 async function refreshFeishuData() {
   const cfg = getFeishuConfig();
   if (!cfg.appId || !cfg.appSecret || !cfg.appToken || !cfg.tableId) {
@@ -237,7 +253,10 @@ function showComplaintDetail(record) {
 // ==================== 修补件模块 ====================
 function initSparePage() {
   const iframe = document.getElementById('spare-iframe');
-  iframe.onload = () => { document.getElementById('spare-fallback')?.style.display = 'none'; };
+  iframe.onload = () => {
+    const el = document.getElementById('spare-fallback');
+    if (el) el.style.display = 'none';
+  };
 }
 
 function switchSpareTab(tab) {
@@ -615,17 +634,6 @@ function saveWhisperKey() {
   if (!key) { showToast('请输入 API Key'); return; }
   DB.set('whisper_key', key);
   showToast('Whisper API Key 已保存');
-}
-
-async function testFeishuConnection() {
-  saveFeishuConfig();
-  showToast('正在测试连接...');
-  const token = await getFeishuToken();
-  if (token) {
-    showToast('✅ 连接成功！');
-  } else {
-    showToast('❌ 连接失败：超时或凭证错误');
-  }
 }
 
 // ==================== 数据管理 ====================
