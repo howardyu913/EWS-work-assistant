@@ -1,5 +1,5 @@
 /* ========================
-   工作助手 v3.0 - 主逻辑
+   工作助手 v3.0.8 - 主逻辑
    ======================== */
 
 // ---------- 数据存储 ----------
@@ -16,8 +16,6 @@ let feishuTokenCache = null;
 let feishuTokenExpiry = 0;
 let recognition = null;
 let isRecording = false;
-let audioChunks = [];
-let mediaRecorder = null;
 
 // ---------- 初始化 ----------
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
   registerSW();
 });
 
-
 function registerSW() {
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
@@ -38,11 +35,9 @@ function initNav() {
   document.querySelectorAll('.nav-btn').forEach(btn => {
     const page = btn.dataset.page;
     if (!page) return;
-    // 直接绑定到每个按钮，避免事件委托在 iOS PWA 中失效
     btn.addEventListener('click', () => navigateTo(page));
   });
 }
-
 
 // ==================== 导航 ====================
 function navigateTo(page) {
@@ -52,21 +47,12 @@ function navigateTo(page) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
   const titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', report: 'AI周报', settings: '设置' };
   document.getElementById('page-title').textContent = titles[page] || '工作助手';
-
-  // 语音按钮只在待办页面显示
   document.getElementById('voice-bar').style.display = (page === 'todo') ? 'block' : 'none';
-
   renderPage(page);
 }
 
 function renderPage(page) {
   if (page === 'complaint') { initFeishuUI(); renderComplaint(); }
-  if (page === 'spare') initSparePage();
-  if (page === 'todo') { renderTodo(); document.getElementById('voice-tip').style.display = 'block'; }
-  if (page === 'report') updateReportPreview();
-  if (page === 'settings') loadSettings();
-}
-  if (page === 'complaint') renderComplaint();
   if (page === 'spare') initSparePage();
   if (page === 'todo') { renderTodo(); document.getElementById('voice-tip').style.display = 'block'; }
   if (page === 'report') updateReportPreview();
@@ -100,18 +86,25 @@ async function getFeishuToken() {
   const cfg = getFeishuConfig();
   if (!cfg.appId || !cfg.appSecret) return null;
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     const res = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ app_id: cfg.appId, app_secret: cfg.appSecret })
+      body: JSON.stringify({ app_id: cfg.appId, app_secret: cfg.appSecret }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
     const data = await res.json();
     if (data.code === 0 && data.tenant_access_token) {
       feishuTokenCache = data.tenant_access_token;
       feishuTokenExpiry = now + (data.expire || 7200) * 1000;
       return feishuTokenCache;
     }
-  } catch (e) { console.error('Feishu token error:', e); }
+  } catch (e) {
+    if (e.name === 'AbortError') console.error('Feishu token: timeout');
+    else console.error('Feishu token error:', e);
+  }
   return null;
 }
 
@@ -434,7 +427,6 @@ function processVoiceText(text) {
   const todos = DB.get('todos', []);
   const activeTodos = todos.filter(t => !t.completed);
 
-  // 尝试匹配现有待办
   for (const t of activeTodos) {
     if (text.includes(t.title) || t.title.includes(text.slice(0, 6))) {
       t.note = (t.note ? t.note + '\n' : '') + formatDateTime() + ': ' + text;
@@ -445,7 +437,6 @@ function processVoiceText(text) {
     }
   }
 
-  // 创建新待办
   const newTodo = {
     id: Date.now().toString(),
     title: text,
@@ -633,7 +624,7 @@ async function testFeishuConnection() {
   if (token) {
     showToast('✅ 连接成功！');
   } else {
-    showToast('❌ 连接失败，请检查凭证');
+    showToast('❌ 连接失败：超时或凭证错误');
   }
 }
 
