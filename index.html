@@ -80,6 +80,12 @@
         <div class="toolbar">
           <button class="btn-primary" onclick="showModal('todo')">+ 手动添加</button>
         </div>
+        <div class="todo-summary" id="todo-summary">
+          <div class="summary-card"><div class="summary-num" id="todo-stat-total">0</div><div class="summary-label">总待办</div></div>
+          <div class="summary-card"><div class="summary-num" id="todo-stat-active">0</div><div class="summary-label">进行中</div></div>
+          <div class="summary-card"><div class="summary-num" id="todo-stat-done">0</div><div class="summary-label">已完成</div></div>
+          <div class="summary-card"><div class="summary-num" id="todo-stat-high">0</div><div class="summary-label">高优先级</div></div>
+        </div>
         <div class="todo-filter-bar">
           <button class="filter-btn active" data-filter="active" onclick="setTodoFilter('active')">进行中</button>
           <button class="filter-btn" data-filter="completed" onclick="setTodoFilter('completed')">已完成</button>
@@ -159,7 +165,7 @@
 
         <div class="settings-group">
           <h3>ℹ️ 关于</h3>
-          <div class="setting-item"><span>版本</span><span>3.0.12</span></div>
+          <div class="setting-item"><span>版本</span><span>3.0.13</span></div>
           <div class="setting-item"><span>数据存储</span><span>本地 localStorage</span></div>
         </div>
       </section>
@@ -243,7 +249,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="app.js?v=312"></script>
+  <script src="app.js?v=313"></script>
   <script>
     // 保底脚本：即使 app.js 缓存/加载失败，核心功能也能工作
     window.navigateTo = window.navigateTo || function(page) {

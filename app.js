@@ -1,5 +1,5 @@
 /* ========================
-   工作助手 v3.0.12 - 主逻辑
+   工作助手 v3.0.13 - 主逻辑
    ======================== */
 
 // ---------- 数据存储 ----------
@@ -288,7 +288,22 @@ function searchSKU() {
 
 // ==================== 待办模块 ====================
 function renderTodo() {
-  let todos = DB.get('todos', []);
+  const allTodos = DB.get('todos', []);
+  // 更新统计面板
+  const total = allTodos.length;
+  const active = allTodos.filter(t => !t.completed).length;
+  const done = allTodos.filter(t => t.completed).length;
+  const high = allTodos.filter(t => !t.completed && t.priority === 'high').length;
+  const stTotal = document.getElementById('todo-stat-total');
+  const stActive = document.getElementById('todo-stat-active');
+  const stDone = document.getElementById('todo-stat-done');
+  const stHigh = document.getElementById('todo-stat-high');
+  if (stTotal) stTotal.textContent = total;
+  if (stActive) stActive.textContent = active;
+  if (stDone) stDone.textContent = done;
+  if (stHigh) stHigh.textContent = high;
+
+  let todos = allTodos.slice();
   if (todoFilter === 'active') todos = todos.filter(t => !t.completed);
   if (todoFilter === 'completed') todos = todos.filter(t => t.completed);
   todos.sort((a, b) => {
@@ -306,6 +321,9 @@ function renderTodo() {
   todos.forEach(t => {
     const li = document.createElement('li');
     li.className = 'list-item' + (t.completed ? ' completed' : '');
+    const doneLabel = t.completedAt
+      ? `✅ 完成于 ${formatDateShort(t.completedAt)}`
+      : '';
     li.innerHTML = `
       <div class="list-item-header">
         <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTodo('${t.id}')">
@@ -315,6 +333,7 @@ function renderTodo() {
       <div class="list-item-meta">
         ${t.date ? `<span>📅 ${t.date}</span>` : ''}
         ${t.createdAt ? `<span>🕐 ${formatDateShort(t.createdAt)}</span>` : ''}
+        ${doneLabel ? `<span style="color:var(--success);">${doneLabel}</span>` : ''}
       </div>
       ${t.note ? `<div class="list-item-note">📝 ${escapeHtml(t.note)}</div>` : ''}
       <div class="list-item-actions">
@@ -361,7 +380,13 @@ function saveTodo() {
 function toggleTodo(id) {
   const todos = DB.get('todos', []);
   const t = todos.find(x => x.id === id);
-  if (t) { t.completed = !t.completed; DB.set('todos', todos); renderTodo(); }
+  if (t) {
+    t.completed = !t.completed;
+    if (t.completed) t.completedAt = Date.now();
+    else delete t.completedAt;
+    DB.set('todos', todos);
+    renderTodo();
+  }
 }
 
 function editTodo(id) {
