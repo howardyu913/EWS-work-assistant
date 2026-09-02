@@ -1,4 +1,4 @@
-const CACHE_NAME = 'work-assistant-v2';
+const CACHE_NAME = 'work-assistant-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -6,7 +6,8 @@ const ASSETS = [
   './app.js',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './sample-reviews.json'
 ];
 
 self.addEventListener('install', e => {
