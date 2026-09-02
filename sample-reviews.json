@@ -1,0 +1,64 @@
+{
+  "consumer_reviews": [
+    {
+      "id": "rev-2026-0828-01",
+      "date": "2026-08-28",
+      "market": "丹麦",
+      "brand": "E-Wheels",
+      "severity": "red",
+      "originalText": "消费者称 E2S V2 MAX 转向部件两次在行驶中断裂并导致两次摔车。E-Wheels 回复称检测未发现制造缺陷，判断为外力/磨损，并表示相关备件正在补货。",
+      "chineseSummary": "E2S V2 MAX 转向部件两次行驶中断裂致摔车，E-Wheels 称外力/磨损所致，备件正在补货。",
+      "impact": "已涉及实际事故且维修责任存在争议，应优先留存车辆检测报告、断口照片与批次信息；目前未见监管介入或召回。",
+      "sourceName": "Trustpilot",
+      "sourceUrl": "https://dk.trustpilot.com/reviews/6a91ae178f55ce7f2e4c8a29"
+    },
+    {
+      "id": "rev-2026-0825-01",
+      "date": "2026-08-25",
+      "market": "瑞士",
+      "brand": "E-Wheels",
+      "severity": "red",
+      "originalText": "消费者称电助力车使用约3个月后曾冒火花、约6个月后电机损坏，同时维修排期至少4个月。",
+      "chineseSummary": "电助力车使用3个月后冒火花、6个月后电机损坏，维修排期至少4个月。",
+      "impact": "电气异常与长维修周期叠加，需优先核查车型、电池/充电接口和服务工单；目前仅有消费者陈述，未经监管或第三方独立证实。",
+      "sourceName": "Trustpilot",
+      "sourceUrl": "https://ch.trustpilot.com/reviews/6a8d4c1a664431e456c4bf44"
+    },
+    {
+      "id": "rev-2026-0823-01",
+      "date": "2026-08-23",
+      "market": "丹麦",
+      "brand": "E-Wheels",
+      "severity": "green",
+      "originalText": "E2S Pro LR 用户称任何安装应用的人或插入充电线都可解锁车辆，并反映反复爆胎、线缆松脱等问题。E-Wheels 回复承认蓝牙锁只适合作为短时电子防启动手段，并称计划加入个人密码保护。",
+      "chineseSummary": "E2S Pro LR 蓝牙锁可被轻易绕过，且存在反复爆胎、线缆松脱问题。E-Wheels 承认蓝牙锁仅为短时防启动手段，计划加入密码保护。",
+      "impact": "属于产品安全设计与可维修性的日常预警，尚无事故报告。",
+      "sourceName": "Trustpilot",
+      "sourceUrl": "https://dk.trustpilot.com/reviews/6a8b1f2cf38ba2986a1d6164"
+    },
+    {
+      "id": "rev-2026-0821-01",
+      "date": "2026-08-21",
+      "market": "挪威",
+      "brand": "E-Wheels/MOMAS",
+      "severity": "red",
+      "originalText": "消费者称其 MOMAS 电助力车一年多内多次送修，发生充电口冒火花、下坡后刹失效，以及曲柄/齿盘/链条在行驶中脱落；E-Wheels 于8月24日回复称愿进一步调查。",
+      "chineseSummary": "MOMAS 电助力车一年多内多次送修，出现充电口冒火花、后刹失效、传动部件行驶中脱落等严重安全问题。",
+      "impact": "同一车辆同时出现电气、制动和传动安全投诉，应优先核查具体型号、批次和维修记录；目前未经监管或第三方独立证实。",
+      "sourceName": "Trustpilot",
+      "sourceUrl": "https://no.trustpilot.com/review/e-wheels.no?page=3"
+    },
+    {
+      "id": "rev-2026-0818-01",
+      "date": "2026-08-18",
+      "market": "瑞士",
+      "brand": "LANDI",
+      "severity": "green",
+      "originalText": "消费者称一辆购入约4周的电动滑板车出现气门故障，门店与 LANDI Schweiz 对责任归属相互推诿，五年保修未覆盖。",
+      "chineseSummary": "新购4周电动滑板车气门故障，门店与 LANDI 保修责任推诿，五年保修未覆盖。",
+      "impact": "暴露展示样机、易损件和保修责任衔接问题；属于单一日常口碑信号。",
+      "sourceName": "Trustpilot",
+      "sourceUrl": "https://ch.trustpilot.com/reviews/6a8469251b05ccc967bf474a"
+    }
+  ]
+}

@@ -127,6 +127,40 @@
         </div>
       </section>
 
+
+      <!-- ===== 消费者评论 ===== -->
+      <section id="page-reviews" class="page">
+        <div class="toolbar" id="reviews-toolbar">
+          <button class="btn-primary" onclick="document.getElementById('review-import-file').click()">📥 导入评论</button>
+          <button class="btn-secondary" onclick="showConfirm('确定清空所有评论数据？', clearReviews)">🗑️ 清空</button>
+          <input type="file" id="review-import-file" accept=".json" style="display:none;" onchange="importReviews(this)">
+        </div>
+        <div class="reviews-summary" id="reviews-summary">
+          <div class="summary-card"><div class="summary-num" id="rev-stat-total">0</div><div class="summary-label">总评论</div></div>
+          <div class="summary-card" style="--num-color:var(--danger)"><div class="summary-num" id="rev-stat-red" style="color:var(--danger)">0</div><div class="summary-label">🔴 红色</div></div>
+          <div class="summary-card" style="--num-color:var(--primary)"><div class="summary-num" id="rev-stat-blue" style="color:var(--primary)">0</div><div class="summary-label">🔵 蓝色</div></div>
+          <div class="summary-card" style="--num-color:var(--success)"><div class="summary-num" id="rev-stat-green" style="color:var(--success)">0</div><div class="summary-label">🟢 绿色</div></div>
+        </div>
+        <div class="review-filter-bar">
+          <button class="filter-btn active" data-rfilter="all" onclick="setReviewFilter('all')">全部</button>
+          <button class="filter-btn" data-rfilter="E-Wheels" onclick="setReviewFilter('E-Wheels')">E-Wheels</button>
+          <button class="filter-btn" data-rfilter="MOMAS" onclick="setReviewFilter('MOMAS')">MOMAS</button>
+          <button class="filter-btn" data-rfilter="LANDI" onclick="setReviewFilter('LANDI')">LANDI</button>
+        </div>
+        <div class="review-severity-bar">
+          <button class="filter-btn active" data-sfilter="all" onclick="setReviewSeverity('all')">全部级别</button>
+          <button class="filter-btn" data-sfilter="red" onclick="setReviewSeverity('red')">🔴 红色</button>
+          <button class="filter-btn" data-sfilter="blue" onclick="setReviewSeverity('blue')">🔵 蓝色</button>
+          <button class="filter-btn" data-sfilter="green" onclick="setReviewSeverity('green')">🟢 绿色</button>
+        </div>
+        <div id="reviews-list"></div>
+        <div class="empty-state" id="reviews-empty" style="display:none;">
+          <svg class="icon-svg" style="width:48px;height:48px;stroke:var(--text-secondary);margin-bottom:12px;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <p>暂无消费者评论数据</p>
+          <p class="empty-sub">点击「导入评论」上传 JSON 数据，或从设置页导入完整备份</p>
+        </div>
+      </section>
+
       <!-- ===== 设置 ===== -->
       <section id="page-settings" class="page">
         <div class="settings-group">
@@ -165,7 +199,7 @@
 
         <div class="settings-group">
           <h3>ℹ️ 关于</h3>
-          <div class="setting-item"><span>版本</span><span>3.0.13</span></div>
+          <div class="setting-item"><span>版本</span><span>3.0.14</span></div>
           <div class="setting-item"><span>数据存储</span><span>本地 localStorage</span></div>
         </div>
       </section>
@@ -198,6 +232,10 @@
       <button class="nav-btn" data-page="report" onclick="navigateTo('report')">
         <div class="nav-icon-wrap"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
         <span class="nav-label">周报</span>
+      </button>
+      <button class="nav-btn" data-page="reviews" onclick="navigateTo('reviews')">
+        <div class="nav-icon-wrap"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <span class="nav-label">评论</span>
       </button>
       <button class="nav-btn" data-page="settings" onclick="navigateTo('settings')">
         <div class="nav-icon-wrap"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
@@ -249,7 +287,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="app.js?v=313"></script>
+  <script src="app.js?v=314"></script>
   <script>
     // 保底脚本：即使 app.js 缓存/加载失败，核心功能也能工作
     window.navigateTo = window.navigateTo || function(page) {

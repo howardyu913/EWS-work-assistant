@@ -292,3 +292,30 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .voice-tip-card { background: linear-gradient(135deg, #FFF9E6, #FFF3CD); border: 1px solid #FFE58F; border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
 .voice-tip-card h4 { font-size: 14px; margin-bottom: 8px; color: #856404; }
 .voice-tip-card p { font-size: 13px; color: #856404; line-height: 1.6; }
+
+/* ---------- 评论模块 ---------- */
+.reviews-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.reviews-summary .summary-num { font-size: 22px; }
+.review-filter-bar { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
+.review-filter-bar .filter-btn { flex-shrink: 0; padding: 8px 14px; font-size: 12px; }
+.review-severity-bar { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+.review-severity-bar .filter-btn { flex-shrink: 0; padding: 8px 14px; font-size: 12px; }
+.review-card { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); transition: transform 0.15s; }
+.review-card:active { transform: scale(0.98); }
+.review-card-header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 12px; }
+.review-date { background: var(--bg); padding: 3px 10px; border-radius: 10px; font-weight: 600; color: var(--text); }
+.review-market { background: rgba(0,122,255,0.08); color: var(--primary); padding: 3px 10px; border-radius: 10px; font-weight: 500; }
+.review-severity { padding: 3px 10px; border-radius: 10px; font-weight: 600; font-size: 11px; }
+.review-brand { background: var(--bg); padding: 3px 10px; border-radius: 10px; color: var(--text-secondary); }
+.review-summary { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 10px; }
+.review-impact { font-size: 12px; color: var(--text-secondary); background: var(--bg); padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; line-height: 1.6; }
+.review-toggle { font-size: 13px; color: var(--primary); font-weight: 500; cursor: pointer; padding: 6px 0; user-select: none; }
+.review-detail { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 6px; }
+.review-original { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 10px; white-space: pre-wrap; }
+.review-source { display: inline-block; font-size: 12px; color: var(--primary); text-decoration: none; background: rgba(0,122,255,0.08); padding: 6px 12px; border-radius: 10px; }
+
+/* ---------- 导航适配6个按钮 ---------- */
+.app-nav { justify-content: space-between; padding: 8px 6px calc(8px + var(--safe-bottom)); }
+.nav-btn { min-width: 48px; padding: 4px 4px; font-size: 9px; }
+.nav-btn .nav-icon-wrap { width: 24px; height: 24px; }
+.icon-svg { width: 20px; height: 20px; }

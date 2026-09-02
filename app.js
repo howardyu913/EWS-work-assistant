@@ -45,7 +45,7 @@ function navigateTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page)?.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
-  const titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', report: 'AI周报', settings: '设置' };
+  const titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', report: 'AI周报', reviews: '消费者评论', settings: '设置' };
   document.getElementById('page-title').textContent = titles[page] || '工作助手';
   document.getElementById('voice-bar').style.display = (page === 'todo') ? 'block' : 'none';
   renderPage(page);
@@ -56,6 +56,7 @@ function renderPage(page) {
   if (page === 'spare') initSparePage();
   if (page === 'todo') { renderTodo(); document.getElementById('voice-tip').style.display = 'block'; }
   if (page === 'report') updateReportPreview();
+  if (page === 'reviews') renderReviews();
   if (page === 'settings') loadSettings();
 }
 
@@ -776,4 +777,126 @@ function escapeHtml(s) {
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
+}
+
+// ==================== 消费者评论模块 ====================
+let reviewBrandFilter = 'all';
+let reviewSeverityFilter = 'all';
+
+function getReviews() {
+  return DB.get('consumer_reviews', []);
+}
+
+function renderReviews() {
+  const all = getReviews();
+  // 统计
+  const total = all.length;
+  const red = all.filter(r => r.severity === 'red').length;
+  const blue = all.filter(r => r.severity === 'blue').length;
+  const green = all.filter(r => r.severity === 'green').length;
+  const stTotal = document.getElementById('rev-stat-total');
+  const stRed = document.getElementById('rev-stat-red');
+  const stBlue = document.getElementById('rev-stat-blue');
+  const stGreen = document.getElementById('rev-stat-green');
+  if (stTotal) stTotal.textContent = total;
+  if (stRed) stRed.textContent = red;
+  if (stBlue) stBlue.textContent = blue;
+  if (stGreen) stGreen.textContent = green;
+
+  let filtered = all.slice();
+  if (reviewBrandFilter !== 'all') {
+    filtered = filtered.filter(r => (r.brand || '').includes(reviewBrandFilter));
+  }
+  if (reviewSeverityFilter !== 'all') {
+    filtered = filtered.filter(r => r.severity === reviewSeverityFilter);
+  }
+  // 按日期倒序
+  filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const list = document.getElementById('reviews-list');
+  const empty = document.getElementById('reviews-empty');
+  if (!list) return;
+  list.innerHTML = '';
+  if (filtered.length === 0) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  const sevMap = {
+    red: { label: '🔴 红色', bg: '#FFE5E5', color: '#FF3B30' },
+    blue: { label: '🔵 蓝色', bg: '#E5F0FF', color: '#007AFF' },
+    green: { label: '🟢 绿色', bg: '#E5F9EC', color: '#34C759' }
+  };
+
+  filtered.forEach(r => {
+    const sev = sevMap[r.severity] || sevMap.green;
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    const reviewId = 'rev-detail-' + (r.id || Math.random().toString(36).slice(2, 8));
+    card.innerHTML = `
+      <div class="review-card-header">
+        <span class="review-date">${escapeHtml(r.date || '')}</span>
+        <span class="review-market">${escapeHtml(r.market || '')}</span>
+        <span class="review-severity" style="background:${sev.bg};color:${sev.color}">${sev.label}</span>
+        <span class="review-brand">${escapeHtml(r.brand || '')}</span>
+      </div>
+      <div class="review-summary">${escapeHtml(r.chineseSummary || '')}</div>
+      ${r.impact ? `<div class="review-impact">💡 影响：${escapeHtml(r.impact)}</div>` : ''}
+      <div class="review-toggle" onclick="toggleReviewDetail('${reviewId}')">👁️ 查看原文 ▼</div>
+      <div class="review-detail" id="${reviewId}" style="display:none;">
+        <div class="review-original">${escapeHtml(r.originalText || '')}</div>
+        ${r.sourceUrl ? `<a href="${escapeHtml(r.sourceUrl)}" target="_blank" class="review-source">🔗 ${escapeHtml(r.sourceName || '来源')}</a>` : ''}
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function toggleReviewDetail(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isHidden = el.style.display === 'none';
+  el.style.display = isHidden ? 'block' : 'none';
+  const btn = el.previousElementSibling;
+  if (btn) btn.textContent = isHidden ? '👁️ 收起原文 ▲' : '👁️ 查看原文 ▼';
+}
+
+function setReviewFilter(brand) {
+  reviewBrandFilter = brand;
+  document.querySelectorAll('[data-rfilter]').forEach(b => b.classList.toggle('active', b.dataset.rfilter === brand));
+  renderReviews();
+}
+
+function setReviewSeverity(sev) {
+  reviewSeverityFilter = sev;
+  document.querySelectorAll('[data-sfilter]').forEach(b => b.classList.toggle('active', b.dataset.sfilter === sev));
+  renderReviews();
+}
+
+function importReviews(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      let imported = [];
+      if (Array.isArray(data)) imported = data;
+      else if (data.consumer_reviews) imported = data.consumer_reviews;
+      else if (data.reviews) imported = data.reviews;
+      if (imported.length === 0) { showToast('❌ 文件中未找到评论数据'); return; }
+      DB.set('consumer_reviews', imported);
+      renderReviews();
+      showToast(`✅ 已导入 ${imported.length} 条评论`);
+    } catch { showToast('❌ 文件格式错误'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function clearReviews() {
+  DB.set('consumer_reviews', []);
+  renderReviews();
+  showToast('评论数据已清空');
 }
