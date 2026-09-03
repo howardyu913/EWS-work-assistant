@@ -1,0 +1,28 @@
+{
+  "kimi_api_key": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "kimi_base_url": "https://api.moonshot.cn/v1",
+  "kimi_model": "moonshot-v1-8k",
+  "pages_per_site": 3,
+  "delay_between_requests": 2,
+  "days_lookback": 7,
+  "sources": [
+    {
+      "name": "E-Wheels 挪威",
+      "url": "https://no.trustpilot.com/review/e-wheels.no",
+      "brand": "E-Wheels",
+      "market": "挪威"
+    },
+    {
+      "name": "E-Wheels 丹麦",
+      "url": "https://dk.trustpilot.com/review/e-wheels.dk",
+      "brand": "E-Wheels",
+      "market": "丹麦"
+    },
+    {
+      "name": "LANDI 瑞士",
+      "url": "https://ch.trustpilot.com/review/landi.ch",
+      "brand": "LANDI",
+      "market": "瑞士"
+    }
+  ]
+}
