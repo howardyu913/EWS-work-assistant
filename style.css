@@ -135,8 +135,12 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .search-box button { padding: 14px 24px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; }
 
 /* ---------- 待办模块 ---------- */
-.toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
-.todo-filter-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+.toolbar { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+.todo-summary { display: flex; gap: 8px; margin-bottom: 10px; }
+.todo-summary .summary-card { flex: 1; background: var(--card); border-radius: 10px; padding: 8px 4px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.todo-summary .summary-num { font-size: 18px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.todo-summary .summary-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+.todo-filter-bar { display: flex; gap: 8px; margin-bottom: 12px; }
 .filter-btn { flex: 1; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--card); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
 .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .list-item { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); position: relative; transition: transform 0.15s; }
