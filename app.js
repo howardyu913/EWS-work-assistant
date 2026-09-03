@@ -900,3 +900,21 @@ function clearReviews() {
   renderReviews();
   showToast('评论数据已清空');
 }
+
+async function loadSampleReviews() {
+  showToast('正在下载示例数据…');
+  try {
+    const res = await fetch('sample-reviews.json');
+    const data = await res.json();
+    let imported = [];
+    if (Array.isArray(data)) imported = data;
+    else if (data.consumer_reviews) imported = data.consumer_reviews;
+    else if (data.reviews) imported = data.reviews;
+    if (imported.length === 0) { showToast('❌ 示例数据为空'); return; }
+    DB.set('consumer_reviews', imported);
+    renderReviews();
+    showToast(`✅ 已加载 ${imported.length} 条示例评论`);
+  } catch (e) {
+    showToast('❌ 下载失败: ' + (e.message || e));
+  }
+}
