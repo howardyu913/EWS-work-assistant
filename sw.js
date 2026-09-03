@@ -1,4 +1,4 @@
-const CACHE_NAME = 'work-assistant-v3';
+const CACHE_NAME = 'work-assistant-v4';
 const ASSETS = [
   './',
   './index.html',

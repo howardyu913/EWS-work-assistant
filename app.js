@@ -322,8 +322,8 @@ function renderTodo() {
   todos.forEach(t => {
     const li = document.createElement('li');
     li.className = 'list-item' + (t.completed ? ' completed' : '');
-    const doneLabel = t.completedAt
-      ? `✅ 完成于 ${formatDateShort(t.completedAt)}`
+    const doneLabel = t.completed
+      ? (t.completedAt ? `✅ 完成于 ${formatDateShort(t.completedAt)}` : '✅ 已完成')
       : '';
     li.innerHTML = `
       <div class="list-item-header">

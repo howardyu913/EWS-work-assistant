@@ -73,10 +73,6 @@
 
       <!-- ===== 待办模块 ===== -->
       <section id="page-todo" class="page">
-        <div class="voice-tip-card" id="voice-tip" style="display:none;">
-          <h4>💡 语音识别提示</h4>
-          <p>当前使用设备自带语音识别，准确度有限。建议：说话清晰、语速适中、使用简短句子。</p>
-        </div>
         <div class="toolbar">
           <button class="btn-primary" onclick="showModal('todo')">+ 手动添加</button>
         </div>
@@ -200,7 +196,7 @@
 
         <div class="settings-group">
           <h3>ℹ️ 关于</h3>
-          <div class="setting-item"><span>版本</span><span>3.0.16</span></div>
+          <div class="setting-item"><span>版本</span><span>3.0.17</span></div>
           <div class="setting-item"><span>数据存储</span><span>本地 localStorage</span></div>
         </div>
       </section>
@@ -288,7 +284,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="app.js?v=316"></script>
+  <script src="app.js?v=317"></script>
   <script>
     // 保底脚本：即使 app.js 缓存/加载失败，核心功能也能工作
     window.navigateTo = window.navigateTo || function(page) {
@@ -296,7 +292,7 @@
       var el = document.getElementById('page-' + page);
       if (el) el.classList.add('active');
       document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.page === page); });
-      var titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', report: 'AI周报', settings: '设置' };
+      var titles = { complaint: '客诉管理', spare: '修补件', todo: '待办事项', report: 'AI周报', reviews: '消费者评论', settings: '设置' };
       var t = document.getElementById('page-title');
       if (t) t.textContent = titles[page] || '工作助手';
       var v = document.getElementById('voice-bar');
