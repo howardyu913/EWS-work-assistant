@@ -339,7 +339,10 @@ function renderTodo() {
       ${t.note ? `<div class="list-item-note">📝 ${escapeHtml(t.note)}</div>` : ''}
       <div class="list-item-actions">
         <button onclick="editTodo('${t.id}')">编辑</button>
-        <button onclick="addTodoNote('${t.id}')">备注</button>
+        ${t.completed
+          ? `<button onclick="toggleTodo('${t.id}')" style="color:var(--primary);">↩️ 恢复</button>`
+          : `<button onclick="toggleTodo('${t.id}')" style="color:var(--success);">✅ 完成</button>`
+        }
         <button class="delete" onclick="deleteTodo('${t.id}')">删除</button>
       </div>
     `;
